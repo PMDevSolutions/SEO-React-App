@@ -9,6 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, CheckCircle, XCircle, Copy } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeSEO } from "@/lib/api";
 import type { SEOAnalysisResult } from "@/lib/types";
@@ -21,7 +27,7 @@ const formSchema = z.object({
 export default function Home() {
   const { toast } = useToast();
   const [results, setResults] = useState<SEOAnalysisResult | null>(null);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,7 +54,9 @@ export default function Home() {
     mutation.mutate(values);
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string | undefined) => {
+    if (!text) return;
+
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied!",
@@ -126,17 +134,28 @@ export default function Home() {
                             {check.description}
                           </p>
                         </div>
-                        {!check.passed && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => copyToClipboard(check.recommendation)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+                        {!check.passed && check.recommendation && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-2"
+                                  onClick={() => copyToClipboard(check.recommendation)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                  Copy
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Copy recommendation to clipboard</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
-                      {!check.passed && (
+                      {!check.passed && check.recommendation && (
                         <div className="mt-4 text-sm p-3 bg-background3 rounded-md">
                           {check.recommendation}
                         </div>
