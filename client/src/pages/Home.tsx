@@ -61,7 +61,10 @@ export default function Home() {
     const match = text.match(/Here is a better [^:]+:\s*(.*)/);
     const recommendationText = match ? match[1].trim() : text;
 
-    navigator.clipboard.writeText(recommendationText);
+    // Remove surrounding quotation marks if present
+    const cleanText = recommendationText.replace(/^"|"$/g, '');
+
+    navigator.clipboard.writeText(cleanText);
     toast({
       title: "Copied!",
       description: "Recommendation copied to clipboard"

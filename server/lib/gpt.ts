@@ -14,16 +14,17 @@ export async function getGPTRecommendation(
         {
           role: "system",
           content: `You are an SEO expert providing actionable recommendations. 
-          Always provide a specific example that incorporates the keyphrase.
+          Always provide a concrete example incorporating the keyphrase.
           Format your response as: "Here is a better [element]: [concrete example]"
           Keep responses under 155 characters for meta descriptions.
+          Do not use quotation marks around the example.
           Focus on being specific and immediately actionable.`
         },
         {
           role: "user",
           content: `Generate a specific example for fixing this SEO issue: "${checkType}" for keyphrase "${keyphrase}".
           Current content: ${context}
-          Remember to start with "Here is a better [element]:" and provide a concrete example.`
+          Remember to format as "Here is a better [element]:" followed by your concrete example without quotation marks.`
         }
       ],
       max_tokens: 150,
