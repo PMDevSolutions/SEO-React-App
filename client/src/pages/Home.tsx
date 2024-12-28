@@ -57,7 +57,11 @@ export default function Home() {
   const copyToClipboard = (text: string | undefined) => {
     if (!text) return;
 
-    navigator.clipboard.writeText(text);
+    // Extract the text after "Here is a better X: " pattern
+    const match = text.match(/Here is a better [^:]+:\s*(.*)/);
+    const recommendationText = match ? match[1].trim() : text;
+
+    navigator.clipboard.writeText(recommendationText);
     toast({
       title: "Copied!",
       description: "Recommendation copied to clipboard"
