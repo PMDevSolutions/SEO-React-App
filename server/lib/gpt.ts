@@ -13,11 +13,17 @@ export async function getGPTRecommendation(
       messages: [
         {
           role: "system",
-          content: `You are an SEO expert providing actionable recommendations. Focus on being specific and practical. Format your response as a concise recommendation starting with an action verb. Context: ${checkType} check failed for keyphrase "${keyphrase}".`
+          content: `You are an SEO expert providing actionable recommendations. 
+          Always provide a specific example that incorporates the keyphrase.
+          Format your response as: "Here is a better [element]: [concrete example]"
+          Keep responses under 155 characters for meta descriptions.
+          Focus on being specific and immediately actionable.`
         },
         {
           role: "user",
-          content: `Generate a specific recommendation for fixing this SEO issue. Current content context: ${context}`
+          content: `Generate a specific example for fixing this SEO issue: "${checkType}" for keyphrase "${keyphrase}".
+          Current content: ${context}
+          Remember to start with "Here is a better [element]:" and provide a concrete example.`
         }
       ],
       max_tokens: 150,
