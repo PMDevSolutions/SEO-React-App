@@ -1,14 +1,25 @@
 import { scrapeWebpage } from "./webScraper";
 import { getGPTRecommendation } from "./gpt";
+import type { SEOCheck } from "@/lib/types";
+
+interface SuccessMessages {
+  [key: string]: string;
+}
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
-  const checks = [];
+  const checks: SEOCheck[] = [];
   let passedChecks = 0;
   let failedChecks = 0;
 
   // Helper function to add check results
-  const addCheck = async (title: string, description: string, passed: boolean, context?: string, skipRecommendation: boolean = false) => {
+  const addCheck = async (
+    title: string,
+    description: string,
+    passed: boolean,
+    context?: string,
+    skipRecommendation = false
+  ) => {
     let recommendation = "";
     if (!passed && !skipRecommendation) {
       recommendation = await getGPTRecommendation(title, keyphrase, context);
@@ -29,8 +40,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   };
 
   // Helper function to get encouraging success messages
-  const getSuccessMessage = (checkType: string) => {
-    const messages = {
+  const getSuccessMessage = (checkType: string): string => {
+    const messages: SuccessMessages = {
       "Keyphrase in Title": "Great job! Your title includes the target keyphrase.",
       "Keyphrase in Meta Description": "Perfect! Your meta description effectively uses the keyphrase.",
       "Keyphrase in URL": "Excellent! Your URL is SEO-friendly with the keyphrase.",
@@ -106,7 +117,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   // 7. Subheadings analysis
   const subheadingsWithKeyphrase = scrapedData.subheadings.some(
-    h => h.toLowerCase().includes(keyphrase.toLowerCase())
+    (heading: string) => heading.toLowerCase().includes(keyphrase.toLowerCase())
   );
   await addCheck(
     "Keyphrase in Subheadings",
@@ -117,7 +128,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   // 8. Image alt text analysis
   const altTextsWithKeyphrase = scrapedData.images.some(
-    img => img.alt?.toLowerCase().includes(keyphrase.toLowerCase())
+    (img: { src: string; alt: string }) => img.alt?.toLowerCase().includes(keyphrase.toLowerCase())
   );
   await addCheck(
     "Image Alt Attributes",
