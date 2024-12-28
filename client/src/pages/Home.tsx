@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, CheckCircle, XCircle, Copy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +24,21 @@ const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
   keyphrase: z.string().min(2, "Keyphrase must be at least 2 characters")
 });
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 export default function Home() {
   const { toast } = useToast();
@@ -50,10 +66,6 @@ export default function Home() {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    mutation.mutate(values);
-  };
-
   const copyToClipboard = (text: string | undefined) => {
     if (!text) return;
 
@@ -71,110 +83,167 @@ export default function Home() {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>SEO Analysis Tool</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL to analyze</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="keyphrase"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target keyphrase</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your target keyphrase" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={mutation.isPending}>
-                  {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Analyze SEO
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    mutation.mutate(values);
+  };
 
-        {results && (
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-background p-4 md:p-8"
+    >
+      <div className="max-w-5xl mx-auto space-y-8">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <Card>
             <CardHeader>
-              <CardTitle>Analysis Results</CardTitle>
-              <div className="text-sm text-muted-foreground">
-                {results.passedChecks} passes ✅ • {results.failedChecks} improvements needed ❌
-              </div>
+              <CardTitle>SEO Analysis Tool</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px] pr-4">
-                <div className="space-y-6">
-                  {results.checks.map((check, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <div className="font-medium flex items-center gap-2">
-                            {check.passed ? (
-                              <CheckCircle className="h-5 w-5 text-greenText" />
-                            ) : (
-                              <XCircle className="h-5 w-5 text-redText" />
-                            )}
-                            {check.title}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {check.description}
-                          </p>
-                        </div>
-                        {!check.passed && check.recommendation && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                  onClick={() => copyToClipboard(check.recommendation)}
-                                >
-                                  <Copy className="h-4 w-4" />
-                                  Copy
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Copy recommendation to clipboard</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
-                      {!check.passed && check.recommendation && (
-                        <div className="mt-4 text-sm p-3 bg-background3 rounded-md">
-                          {check.recommendation}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>URL to analyze</FormLabel>
+                        <FormControl>
+                          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                            <Input placeholder="https://example.com" {...field} />
+                          </motion.div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="keyphrase"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Target keyphrase</FormLabel>
+                        <FormControl>
+                          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                            <Input placeholder="Enter your target keyphrase" {...field} />
+                          </motion.div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      type="submit"
+                      disabled={mutation.isPending}
+                      className="w-full"
+                    >
+                      {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Analyze SEO
+                    </Button>
+                  </motion.div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
-        )}
+        </motion.div>
+
+        <AnimatePresence>
+          {results && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Analysis Results</CardTitle>
+                  <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    className="text-sm text-muted-foreground"
+                  >
+                    {results.passedChecks} passes ✅ • {results.failedChecks} improvements needed ❌
+                  </motion.div>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[600px] pr-4">
+                    <motion.div
+                      variants={container}
+                      initial="hidden"
+                      animate="show"
+                      className="space-y-6"
+                    >
+                      {results.checks.map((check, index) => (
+                        <motion.div
+                          key={index}
+                          variants={item}
+                          className="border p-4"
+                          whileHover={{ y: -2 }}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="font-medium flex items-center gap-2"
+                              >
+                                {check.passed ? (
+                                  <CheckCircle className="h-5 w-5 text-greenText" />
+                                ) : (
+                                  <XCircle className="h-5 w-5 text-redText" />
+                                )}
+                                {check.title}
+                              </motion.div>
+                              <p className="text-sm text-muted-foreground">
+                                {check.description}
+                              </p>
+                            </div>
+                            {!check.passed && check.recommendation && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-2"
+                                        onClick={() => copyToClipboard(check.recommendation)}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                        Copy
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Copy recommendation to clipboard</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                          {!check.passed && check.recommendation && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mt-4 text-sm p-3 bg-background3"
+                            >
+                              {check.recommendation}
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
