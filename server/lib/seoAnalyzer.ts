@@ -8,21 +8,41 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   let failedChecks = 0;
 
   // Helper function to add check results
-  const addCheck = async (title: string, description: string, passed: boolean, context?: string) => {
+  const addCheck = async (title: string, description: string, passed: boolean, context?: string, skipRecommendation: boolean = false) => {
     let recommendation = "";
-    if (!passed) {
+    if (!passed && !skipRecommendation) {
       recommendation = await getGPTRecommendation(title, keyphrase, context);
       failedChecks++;
     } else {
       passedChecks++;
     }
-    
+
+    // Change description for passed checks to be more encouraging
+    const successDescription = passed ? getSuccessMessage(title) : description;
+
     checks.push({
       title,
-      description,
+      description: successDescription,
       passed,
       recommendation
     });
+  };
+
+  // Helper function to get encouraging success messages
+  const getSuccessMessage = (checkType: string) => {
+    const messages = {
+      "Keyphrase in Title": "Great job! Your title includes the target keyphrase.",
+      "Keyphrase in Meta Description": "Perfect! Your meta description effectively uses the keyphrase.",
+      "Keyphrase in URL": "Excellent! Your URL is SEO-friendly with the keyphrase.",
+      "Content Length": "Well done! Your content length is good for SEO.",
+      "Keyphrase Density": "Perfect! Your keyphrase density is within the optimal range.",
+      "Keyphrase in Introduction": "Excellent! You've included the keyphrase in your introduction.",
+      "Keyphrase in Subheadings": "Great work! Your subheadings include the keyphrase.",
+      "Image Alt Attributes": "Well done! Your images are properly optimized with the keyphrase.",
+      "Internal Links": "Perfect! You have a good number of internal links.",
+      "Outbound Links": "Excellent! You've included relevant outbound links."
+    };
+    return messages[checkType] || "Well done!";
   };
 
   // 1. Title analysis
@@ -70,7 +90,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Keyphrase Density",
     "Keyphrase density should be between 0.5% and 2.5%",
     goodDensity,
-    `Current density: ${density.toFixed(1)}%`
+    `Current density: ${density.toFixed(1)}%`,
+    true // Skip recommendation for density check
   );
 
   // 6. Keyphrase in first paragraph

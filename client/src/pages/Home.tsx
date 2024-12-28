@@ -40,6 +40,11 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+// Add this helper function at the top level of the file
+const shouldShowCopyButton = (checkTitle: string) => {
+  return checkTitle !== "Keyphrase Density";
+};
+
 export default function Home() {
   const { toast } = useToast();
   const [results, setResults] = useState<SEOAnalysisResult | null>(null);
@@ -201,7 +206,7 @@ export default function Home() {
                                 {check.description}
                               </p>
                             </div>
-                            {!check.passed && check.recommendation && (
+                            {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && (
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
