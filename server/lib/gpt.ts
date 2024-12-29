@@ -1,6 +1,16 @@
 import OpenAI from "openai";
+import { log } from "../vite";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Initialize OpenAI with error handling
+let openai: OpenAI | null = null;
+try {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    timeout: 30000 // 30 second timeout
+  });
+} catch (error: any) {
+  log(`Failed to initialize OpenAI client: ${error.message}`);
+}
 
 export async function getGPTRecommendation(
   checkType: string,
@@ -8,9 +18,20 @@ export async function getGPTRecommendation(
   context?: string
 ): Promise<string> {
   try {
-    // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    if (!openai) {
+      log("OpenAI client not initialized");
+      return "Unable to generate recommendation. OpenAI client not configured.";
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      log("OpenAI API key is not configured");
+      return "Unable to generate recommendation. API key not configured.";
+    }
+
+    log(`Generating recommendation for ${checkType} with keyphrase: ${keyphrase}`);
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", 
+      model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -23,8 +44,8 @@ export async function getGPTRecommendation(
         },
         {
           role: "user",
-          content: `Generate a specific example for fixing this SEO issue: ${checkType} for keyphrase ${keyphrase}.
-          Current content: ${context}
+          content: `Generate a specific example for fixing this SEO issue: ${checkType} for keyphrase "${keyphrase}".
+          Current content: ${context || "Not provided"}
           Remember to format as Here is a better [element]: followed by your concrete example without quotation marks.`
         }
       ],
@@ -32,10 +53,19 @@ export async function getGPTRecommendation(
       temperature: 0.7,
     });
 
-    return response.choices[0].message.content?.trim() || 
+    const content = response.choices[0]?.message?.content?.trim() || 
       "Unable to generate recommendation at this time.";
+
+    // Remove any remaining quotation marks from the response
+    return content.replace(/["']/g, '');
   } catch (error: any) {
-    console.error("GPT API Error:", error);
+    log(`GPT API Error: ${error.message}`);
+    if (error.code === 'insufficient_quota') {
+      return "API quota exceeded. Please try again later.";
+    }
+    if (error.code === 'context_length_exceeded') {
+      return "Content too long for analysis. Please try with shorter content.";
+    }
     return "Unable to generate recommendation. Please try again later.";
   }
 }

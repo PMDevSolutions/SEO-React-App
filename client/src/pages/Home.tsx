@@ -40,9 +40,11 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-// Add this helper function at the top level of the file
+// Helper function to determine if copy button should be shown
 const shouldShowCopyButton = (checkTitle: string) => {
-  return checkTitle !== "Keyphrase Density";
+  // Exclude checks that shouldn't have a copy button
+  const excludedChecks = ['Keyphrase Density'];
+  return !excludedChecks.includes(checkTitle);
 };
 
 export default function Home() {
@@ -104,7 +106,7 @@ export default function Home() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Card>
+          <Card className="border border-border">
             <CardHeader>
               <CardTitle>SEO Analysis Tool</CardTitle>
             </CardHeader>
@@ -162,7 +164,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <Card>
+              <Card className="border border-border">
                 <CardHeader>
                   <CardTitle>Analysis Results</CardTitle>
                   <motion.div
@@ -185,7 +187,7 @@ export default function Home() {
                         <motion.div
                           key={index}
                           variants={item}
-                          className="border p-4"
+                          className="border border-border p-4"
                           whileHover={{ y: -2 }}
                         >
                           <div className="flex items-start justify-between">
