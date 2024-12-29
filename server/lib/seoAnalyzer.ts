@@ -99,7 +99,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   const goodDensity = density >= 0.5 && density <= 2.5;
   await addCheck(
     "Keyphrase Density",
-    "Keyphrase density should be between 0.5% and 2.5%",
+    `Current density: ${density.toFixed(1)}%`,
     goodDensity,
     `Current density: ${density.toFixed(1)}%`,
     true // Skip recommendation for density check

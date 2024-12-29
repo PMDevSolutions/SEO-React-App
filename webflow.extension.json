@@ -1,0 +1,13 @@
+{
+  "label": "SEO Analysis Tool",
+  "description": "Analyzes and provides SEO recommendations for Webflow pages",
+  "version": "1.0.0",
+  "category": "seo",
+  "homepageUrl": "https://example.com",
+  "icon": {
+    "light": "./assets/icon-light.svg",
+    "dark": "./assets/icon-dark.svg"
+  },
+  "containerId": "seo-analysis-panel",
+  "runtime": "webflow.designer.extension"
+}
