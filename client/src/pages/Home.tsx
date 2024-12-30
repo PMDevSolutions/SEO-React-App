@@ -206,80 +206,61 @@ export default function Home() {
                           className="border p-4 w-full"
                           whileHover={{ y: -2 }}
                         >
-                          <div className="w-full">
-                            <div className="flex items-start justify-between w-full">
-                              <div className="space-y-2 flex-1">
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  className="font-medium flex items-center gap-2"
-                                >
-                                  {check.passed ? (
-                                    <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
-                                  ) : (
-                                    <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
-                                  )}
-                                  {check.title}
-                                </motion.div>
-                                <p className="text-sm text-muted-foreground">
-                                  {check.description}
-                                </p>
-                              </div>
-                              {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && !useIsMobile() && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <motion.div 
-                                        whileHover={{ scale: 1.05 }} 
-                                        whileTap={{ scale: 0.95 }}
-                                        className="ml-4"
-                                      >
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="flex items-center gap-2"
-                                          onClick={() => copyToClipboard(check.recommendation)}
-                                        >
-                                          <Copy className="h-4 w-4" />
-                                          Copy
-                                        </Button>
-                                      </motion.div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Copy recommendation to clipboard</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </div>
-                            {!check.passed && check.recommendation && (
+                          <div className="flex items-start justify-between w-full">
+                            <div className="space-y-2 flex-1">
                               <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="mt-4 text-sm p-4 bg-background3 w-full"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="font-medium flex items-center gap-2"
                               >
-                                {check.recommendation}
-                                {useIsMobile() && shouldShowCopyButton(check.title) && (
-                                  <motion.div 
-                                    whileHover={{ scale: 1.05 }} 
-                                    whileTap={{ scale: 0.95 }}
-                                    className="mt-4"
-                                  >
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="w-full flex items-center justify-center gap-2"
-                                      onClick={() => copyToClipboard(check.recommendation)}
-                                    >
-                                      <Copy className="h-4 w-4" />
-                                      Copy Recommendation
-                                    </Button>
-                                  </motion.div>
+                                {check.passed ? (
+                                  <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
+                                ) : (
+                                  <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
                                 )}
+                                {check.title}
                               </motion.div>
+                              <p className="text-sm text-muted-foreground">
+                                {check.description}
+                              </p>
+                            </div>
+                            {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <motion.div 
+                                      whileHover={{ scale: 1.05 }} 
+                                      whileTap={{ scale: 0.95 }}
+                                      className="ml-4"
+                                    >
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-2"
+                                        onClick={() => copyToClipboard(check.recommendation)}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                        Copy
+                                      </Button>
+                                    </motion.div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Copy recommendation to clipboard</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </div>
+                          {!check.passed && check.recommendation && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mt-4 text-sm p-4 bg-background3 w-full"
+                            >
+                              {check.recommendation}
+                            </motion.div>
+                          )}
                         </motion.div>
                       ))}
                     </motion.div>
