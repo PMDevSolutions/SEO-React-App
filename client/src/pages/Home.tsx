@@ -40,7 +40,6 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-// Add this helper function at the top level of the file
 const shouldShowCopyButton = (checkTitle: string) => {
   return checkTitle !== "Keyphrase Density";
 };
@@ -74,11 +73,8 @@ export default function Home() {
   const copyToClipboard = (text: string | undefined) => {
     if (!text) return;
 
-    // Extract the text after "Here is a better X: " pattern
     const match = text.match(/Here is a better [^:]+:\s*(.*)/);
     const recommendationText = match ? match[1].trim() : text;
-
-    // Remove surrounding quotation marks if present
     const cleanText = recommendationText.replace(/^"|"$/g, '');
 
     navigator.clipboard.writeText(cleanText);
@@ -96,30 +92,39 @@ export default function Home() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-background p-4 md:p-8"
+      className="min-h-screen bg-background p-4 md:p-6"
     >
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
+          className="w-full"
         >
-          <Card>
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>SEO Analysis Tool</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                   <FormField
                     control={form.control}
                     name="url"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>URL to analyze</FormLabel>
                         <FormControl>
-                          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                            <Input placeholder="https://example.com" {...field} />
+                          <motion.div 
+                            whileHover={{ scale: 1.01 }} 
+                            whileTap={{ scale: 0.99 }}
+                            className="w-full"
+                          >
+                            <Input 
+                              placeholder="https://example.com" 
+                              {...field}
+                              className="w-full"
+                            />
                           </motion.div>
                         </FormControl>
                       </FormItem>
@@ -129,23 +134,35 @@ export default function Home() {
                     control={form.control}
                     name="keyphrase"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>Target keyphrase</FormLabel>
                         <FormControl>
-                          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                            <Input placeholder="Enter your target keyphrase" {...field} />
+                          <motion.div 
+                            whileHover={{ scale: 1.01 }} 
+                            whileTap={{ scale: 0.99 }}
+                            className="w-full"
+                          >
+                            <Input 
+                              placeholder="Enter your target keyphrase" 
+                              {...field}
+                              className="w-full"
+                            />
                           </motion.div>
                         </FormControl>
                       </FormItem>
                     )}
                   />
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }} 
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full pt-2"
+                  >
                     <Button
                       type="submit"
                       disabled={mutation.isPending}
-                      className="w-full"
+                      className="w-full h-11"
                     >
-                      {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {mutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Analyze SEO
                     </Button>
                   </motion.div>
@@ -161,8 +178,9 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="w-full"
             >
-              <Card>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle>Analysis Results</CardTitle>
                   <motion.div
@@ -174,31 +192,31 @@ export default function Home() {
                   </motion.div>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[600px] pr-4">
+                  <ScrollArea className="h-[600px] pr-4 w-full">
                     <motion.div
                       variants={container}
                       initial="hidden"
                       animate="show"
-                      className="space-y-6"
+                      className="space-y-5 w-full"
                     >
                       {results.checks.map((check, index) => (
                         <motion.div
                           key={index}
                           variants={item}
-                          className="border p-4"
+                          className="border p-4 w-full"
                           whileHover={{ y: -2 }}
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-1">
+                          <div className="flex items-start justify-between w-full">
+                            <div className="space-y-2 flex-1">
                               <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 className="font-medium flex items-center gap-2"
                               >
                                 {check.passed ? (
-                                  <CheckCircle className="h-5 w-5 text-greenText" />
+                                  <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
                                 ) : (
-                                  <XCircle className="h-5 w-5 text-redText" />
+                                  <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
                                 )}
                                 {check.title}
                               </motion.div>
@@ -210,7 +228,11 @@ export default function Home() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <motion.div 
+                                      whileHover={{ scale: 1.05 }} 
+                                      whileTap={{ scale: 0.95 }}
+                                      className="ml-4"
+                                    >
                                       <Button
                                         variant="outline"
                                         size="sm"
@@ -234,7 +256,7 @@ export default function Home() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="mt-4 text-sm p-3 bg-background3"
+                              className="mt-4 text-sm p-4 bg-background3 w-full"
                             >
                               {check.recommendation}
                             </motion.div>
