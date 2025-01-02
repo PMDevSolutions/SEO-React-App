@@ -1,0 +1,6 @@
+{
+  "name": "my-extension-name",
+  "publicDir": "dist",
+  "size": "default",
+  "apiVersion": "2"
+}
