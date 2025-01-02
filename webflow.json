@@ -4,5 +4,6 @@
   "publicDir": "dist",
   "size": "default",
   "apiVersion": "2",
-  "port": 5173
+  "port": 1337,
+  "host": "0.0.0.0"
 }
