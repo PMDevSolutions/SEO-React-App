@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { analyzeSEO } from "@/lib/api";
 import type { SEOAnalysisResult } from "@/lib/types";
+import { ElementLogger } from '../components/ElementLogger';
 
 const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -271,6 +272,7 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
+      <ElementLogger />
     </motion.div>
   );
 }
