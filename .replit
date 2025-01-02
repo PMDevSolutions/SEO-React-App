@@ -13,13 +13,6 @@ run = ["npm", "run", "start"]
 [[ports]]
 localPort = 1337
 externalPort = 3000
-protocol = "http"
-exposeLocalhost = true
-
-[[ports]]
-localPort = 5173
-externalPort = 3001
-protocol = "http"
 
 [[ports]]
 localPort = 5000
@@ -27,6 +20,10 @@ externalPort = 80
 
 [[ports]]
 localPort = 5001
+externalPort = 3001
+
+[[ports]]
+localPort = 5173
 externalPort = 3001
 
 [workflows]
