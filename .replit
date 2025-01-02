@@ -11,7 +11,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [[ports]]
-localPort = 1337
+localPort = 5173
 externalPort = 3000
 protocol = "http"
 

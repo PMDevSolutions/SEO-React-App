@@ -1,6 +1,8 @@
+
 {
   "name": "my-extension-name",
   "publicDir": "dist",
   "size": "default",
-  "apiVersion": "2"
+  "apiVersion": "2",
+  "port": 5173
 }
