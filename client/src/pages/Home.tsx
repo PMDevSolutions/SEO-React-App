@@ -19,7 +19,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { analyzeSEO } from "@/lib/api";
 import type { SEOAnalysisResult } from "@/lib/types";
-import { ElementLogger } from '../components/ElementLogger';
 
 const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -42,7 +41,7 @@ const item = {
 };
 
 const shouldShowCopyButton = (checkTitle: string) => {
-  return checkTitle !== "Keyphrase Density";
+  return !checkTitle.toLowerCase().includes("density");
 };
 
 export default function Home() {
@@ -104,11 +103,11 @@ export default function Home() {
         >
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>SEO Analysis Tool</CardTitle>
+              <CardTitle className="text-center">SEO Analysis Tool</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 w-full">
                   <FormField
                     control={form.control}
                     name="url"
@@ -183,11 +182,11 @@ export default function Home() {
             >
               <Card className="w-full">
                 <CardHeader>
-                  <CardTitle>Analysis Results</CardTitle>
+                  <CardTitle className="text-center">Analysis Results</CardTitle>
                   <motion.div
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
-                    className="text-sm text-muted-foreground"
+                    className="text-sm text-muted-foreground text-center"
                   >
                     {results.passedChecks} passes ✅ • {results.failedChecks} improvements needed ❌
                   </motion.div>
@@ -272,7 +271,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
-      <ElementLogger />
     </motion.div>
   );
 }
