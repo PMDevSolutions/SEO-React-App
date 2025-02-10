@@ -157,16 +157,32 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   // Add new check for next-gen image formats
   const nextGenFormats = ['.webp', '.avif', '.svg'];
-  const hasNextGenImages = scrapedData.images.some(img => {
-    const imgUrl = img.src.toLowerCase();
-    return nextGenFormats.some(format => imgUrl.endsWith(format));
-  });
+  let imageFormatRecommendation = "";
+  let hasNextGenImages = false;
+
+  if (scrapedData.images.length === 0) {
+    imageFormatRecommendation = "No images found on the page. Consider adding relevant images using modern formats like WebP or AVIF to enhance user experience and page load times.";
+    hasNextGenImages = false;
+  } else {
+    const nonOptimizedImages = scrapedData.images.filter(img => {
+      const imgUrl = img.src.toLowerCase();
+      return !nextGenFormats.some(format => imgUrl.endsWith(format));
+    });
+
+    hasNextGenImages = nonOptimizedImages.length === 0;
+
+    if (!hasNextGenImages) {
+      const imageList = nonOptimizedImages.map(img => img.src).join('\n');
+      imageFormatRecommendation = `Convert these images to WebP or AVIF format for better performance:\n${imageList}\n\nUse tools like cwebp or online converters to optimize these images.`;
+    }
+  }
 
   await addCheck(
     "Next-Gen Image Formats",
     "Images should use modern formats like WebP, AVIF, or SVG for better performance",
     hasNextGenImages,
-    `Found images: ${scrapedData.images.map(img => img.src).join(', ')}`
+    scrapedData.images.map(img => img.src).join(', '),
+    true // Skip GPT recommendation as we have custom recommendations
   );
 
   return {

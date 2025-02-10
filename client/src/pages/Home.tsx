@@ -53,7 +53,8 @@ const iconAnimation = {
 };
 
 const shouldShowCopyButton = (checkTitle: string) => {
-  return !checkTitle.toLowerCase().includes("density");
+  return !checkTitle.toLowerCase().includes("density") && 
+         !checkTitle.toLowerCase().includes("image format");
 };
 
 export default function Home() {
