@@ -28,7 +28,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       passedChecks++;
     }
 
-    // Change description for passed checks to be more encouraging
     const successDescription = passed ? getSuccessMessage(title) : description;
 
     checks.push({
@@ -51,7 +50,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       "Keyphrase in Subheadings": "Great work! Your subheadings include the keyphrase.",
       "Image Alt Attributes": "Well done! Your images are properly optimized with the keyphrase.",
       "Internal Links": "Perfect! You have a good number of internal links.",
-      "Outbound Links": "Excellent! You've included relevant outbound links."
+      "Outbound Links": "Excellent! You've included relevant outbound links.",
+      "Next-Gen Image Formats": "Excellent! Your images use modern, optimized formats."
     };
     return messages[checkType] || "Well done!";
   };
@@ -153,6 +153,20 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "The page should contain outbound links to authoritative sources",
     hasOutboundLinks,
     `Found ${scrapedData.outboundLinks.length} outbound links`
+  );
+
+  // Add new check for next-gen image formats
+  const nextGenFormats = ['.webp', '.avif', '.svg'];
+  const hasNextGenImages = scrapedData.images.some(img => {
+    const imgUrl = img.src.toLowerCase();
+    return nextGenFormats.some(format => imgUrl.endsWith(format));
+  });
+
+  await addCheck(
+    "Next-Gen Image Formats",
+    "Images should use modern formats like WebP, AVIF, or SVG for better performance",
+    hasNextGenImages,
+    `Found images: ${scrapedData.images.map(img => img.src).join(', ')}`
   );
 
   return {
