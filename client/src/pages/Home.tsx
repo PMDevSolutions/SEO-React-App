@@ -40,6 +40,18 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+const iconAnimation = {
+  initial: { scale: 0 },
+  animate: { 
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 260,
+      damping: 20
+    }
+  }
+};
+
 const shouldShowCopyButton = (checkTitle: string) => {
   return !checkTitle.toLowerCase().includes("density");
 };
@@ -172,7 +184,7 @@ export default function Home() {
           </Card>
         </motion.div>
 
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {results && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -203,21 +215,28 @@ export default function Home() {
                         <motion.div
                           key={index}
                           variants={item}
-                          className="border p-4 w-full"
-                          whileHover={{ y: -2 }}
+                          className="border p-4 w-full rounded-lg hover:bg-background2 transition-colors"
+                          whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
                         >
                           <div className="flex items-start justify-between w-full">
                             <div className="space-y-2 flex-1">
                               <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
                                 className="font-medium flex items-center gap-2"
                               >
-                                {check.passed ? (
-                                  <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
-                                ) : (
-                                  <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
-                                )}
+                                <motion.div
+                                  variants={iconAnimation}
+                                  initial="initial"
+                                  animate="animate"
+                                >
+                                  {check.passed ? (
+                                    <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
+                                  ) : (
+                                    <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
+                                  )}
+                                </motion.div>
                                 {check.title}
                               </motion.div>
                               <p className="text-sm text-muted-foreground">
@@ -229,8 +248,8 @@ export default function Home() {
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <motion.div 
-                                      whileHover={{ scale: 1.05 }} 
-                                      whileTap={{ scale: 0.95 }}
+                                      whileHover={{ scale: 1.1 }} 
+                                      whileTap={{ scale: 0.9 }}
                                       className="ml-4"
                                     >
                                       <Button
@@ -256,7 +275,7 @@ export default function Home() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="mt-4 text-sm p-4 bg-background3 w-full"
+                              className="mt-4 text-sm p-4 bg-background3 rounded-md w-full"
                             >
                               {check.recommendation}
                             </motion.div>
