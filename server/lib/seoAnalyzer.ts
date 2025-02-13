@@ -49,11 +49,15 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     skipRecommendation = false
   ) => {
     let recommendation = "";
-    if (!passed && !skipRecommendation) {
-      recommendation = await getGPTRecommendation(title, keyphrase, context);
-      failedChecks++;
-    } else {
+
+    // Update counting logic to be independent of recommendation generation
+    if (passed) {
       passedChecks++;
+    } else {
+      failedChecks++;
+      if (!skipRecommendation) {
+        recommendation = await getGPTRecommendation(title, keyphrase, context);
+      }
     }
 
     const successDescription = passed ? getSuccessMessage(title) : description;
