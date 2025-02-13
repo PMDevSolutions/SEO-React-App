@@ -6,6 +6,34 @@ interface SuccessMessages {
   [key: string]: string;
 }
 
+// Helper function to calculate keyphrase density
+function calculateKeyphraseDensity(content: string, keyphrase: string): { 
+  density: number;
+  occurrences: number;
+  totalWords: number;
+} {
+  // Normalize content and keyphrase
+  const normalizedContent = content.toLowerCase().trim();
+  const normalizedKeyphrase = keyphrase.toLowerCase().trim();
+
+  // Count total words in content
+  const totalWords = normalizedContent.split(/\s+/).filter(word => word.length > 0).length;
+
+  // Count non-overlapping occurrences of the keyphrase
+  const regex = new RegExp(`\\b${normalizedKeyphrase}\\b`, 'gi');
+  const matches = normalizedContent.match(regex) || [];
+  const occurrences = matches.length;
+
+  // Calculate density as percentage
+  const density = (occurrences * (normalizedKeyphrase.split(/\s+/).length)) / totalWords * 100;
+
+  return {
+    density,
+    occurrences,
+    totalWords
+  };
+}
+
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
   const checks: SEOCheck[] = [];
@@ -94,15 +122,15 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   );
 
   // 5. Keyphrase density
-  const keyphraseCount = (scrapedData.content.toLowerCase().match(new RegExp(keyphrase.toLowerCase(), 'g')) || []).length;
-  const density = (keyphraseCount / wordCount) * 100;
-  const goodDensity = density >= 0.5 && density <= 2.5;
+  const densityResult = calculateKeyphraseDensity(scrapedData.content, keyphrase);
+  const goodDensity = densityResult.density >= 0.5 && densityResult.density <= 2.5;
+
   await addCheck(
     "Keyphrase Density",
-    "Keyphrase density should be between 0.5% and 2.5%",
+    `Keyphrase density should be between 0.5% and 2.5%. Current density: ${densityResult.density.toFixed(1)}% (${densityResult.occurrences} occurrences in ${densityResult.totalWords} words)`,
     goodDensity,
-    `Current density: ${density.toFixed(1)}%`,
-    true // Skip recommendation for density check
+    `Content length: ${densityResult.totalWords} words, Keyphrase occurrences: ${densityResult.occurrences}`,
+    true // Skip GPT recommendation for density
   );
 
   // 6. Keyphrase in first paragraph
