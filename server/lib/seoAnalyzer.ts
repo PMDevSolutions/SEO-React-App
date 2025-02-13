@@ -7,7 +7,7 @@ interface SuccessMessages {
 }
 
 // Helper function to calculate keyphrase density
-function calculateKeyphraseDensity(content: string, keyphrase: string): { 
+function calculateKeyphraseDensity(content: string, keyphrase: string): {
   density: number;
   occurrences: number;
   totalWords: number;
@@ -139,13 +139,27 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   );
 
   // 6. Keyphrase in first paragraph
-  const firstParagraph = scrapedData.paragraphs[0] || "";
-  const keyphraseInIntro = firstParagraph.toLowerCase().includes(keyphrase.toLowerCase());
+  let firstParagraph = scrapedData.paragraphs[0] || "";
+  let keyphraseInIntro = false;
+  let introContext = "No introduction paragraph found";
+
+  if (firstParagraph) {
+    // Normalize both the paragraph and keyphrase for comparison
+    const normalizedParagraph = firstParagraph.toLowerCase().trim();
+    const normalizedKeyphrase = keyphrase.toLowerCase().trim();
+
+    // Check if the normalized keyphrase appears in the normalized paragraph
+    keyphraseInIntro = normalizedParagraph.includes(normalizedKeyphrase);
+    introContext = firstParagraph;
+  }
+
   await addCheck(
     "Keyphrase in Introduction",
-    "The focus keyphrase should appear in the first paragraph",
+    keyphraseInIntro
+      ? "The focus keyphrase appears naturally in the first paragraph"
+      : "The focus keyphrase should appear in the first paragraph to establish topic relevance early",
     keyphraseInIntro,
-    firstParagraph
+    introContext
   );
 
   // 7. Subheadings analysis
