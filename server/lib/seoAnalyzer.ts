@@ -116,9 +116,10 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   const wordCount = scrapedData.content.split(/\s+/).length;
   await addCheck(
     "Content Length",
-    "Content should be at least 300 words long",
+    `Your content has ${wordCount} words. For good SEO, aim for at least ${minWordCount} words to provide comprehensive coverage of your topic.`,
     wordCount >= minWordCount,
-    `Current word count: ${wordCount}`
+    `Current word count: ${wordCount}`,
+    true // Skip GPT recommendation as we have custom message
   );
 
   // 5. Keyphrase density
