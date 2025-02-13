@@ -27,19 +27,29 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
     // Get all text content
     const content = $("body").text().trim();
 
-    // Get paragraphs - improved to handle more cases
-    const paragraphs = $("article p, main p, .content p, #content p, .post-content p, p")
+    console.log("Scraping paragraphs...");
+    console.log("Total p tags found:", $("p").length);
+
+    // Get paragraphs with more detailed selector and logging
+    const allParagraphElements = $("article p, main p, .content p, #content p, .post-content p, p");
+    console.log("Found elements with paragraph selectors:", allParagraphElements.length);
+
+    const paragraphs = allParagraphElements
       .map((_: any, el: any) => {
-        const text = $(el).text().trim();
-        console.log("Found paragraph:", text); // Debug log
+        const $el = $(el);
+        const text = $el.text().trim();
+        const parentClass = $el.parent().attr('class') || 'no-parent-class';
+        console.log(`Paragraph found in ${parentClass}:`, text.substring(0, 100) + (text.length > 100 ? '...' : ''));
         return text;
       })
       .get()
       .filter((text: string) => text.length > 0);
 
-    console.log("Total paragraphs found:", paragraphs.length); // Debug log
+    console.log(`After filtering, found ${paragraphs.length} non-empty paragraphs`);
     if (paragraphs.length > 0) {
-      console.log("First paragraph:", paragraphs[0]); // Debug log
+      console.log("First paragraph content:", paragraphs[0]);
+    } else {
+      console.log("No valid paragraphs found");
     }
 
     // Get subheadings

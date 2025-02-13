@@ -139,18 +139,30 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   );
 
   // 6. Keyphrase in first paragraph
+  console.log("Analyzing first paragraph...");
   let firstParagraph = scrapedData.paragraphs[0] || "";
   let keyphraseInIntro = false;
   let introContext = "No introduction paragraph found";
+
+  console.log("Total paragraphs available:", scrapedData.paragraphs.length);
+  console.log("First paragraph content:", firstParagraph);
+  console.log("Keyphrase to check:", keyphrase);
 
   if (firstParagraph) {
     // Normalize both the paragraph and keyphrase for comparison
     const normalizedParagraph = firstParagraph.toLowerCase().trim();
     const normalizedKeyphrase = keyphrase.toLowerCase().trim();
 
+    console.log("Normalized paragraph:", normalizedParagraph);
+    console.log("Normalized keyphrase:", normalizedKeyphrase);
+
     // Check if the normalized keyphrase appears in the normalized paragraph
     keyphraseInIntro = normalizedParagraph.includes(normalizedKeyphrase);
     introContext = firstParagraph;
+
+    console.log("Keyphrase found in intro:", keyphraseInIntro);
+  } else {
+    console.log("No first paragraph found");
   }
 
   await addCheck(
