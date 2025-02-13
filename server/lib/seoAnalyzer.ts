@@ -149,9 +149,13 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   console.log("Keyphrase to check:", keyphrase);
 
   if (firstParagraph) {
-    // Normalize both the paragraph and keyphrase for comparison
-    const normalizedParagraph = firstParagraph.toLowerCase().trim();
-    const normalizedKeyphrase = keyphrase.toLowerCase().trim();
+    // Convert both strings to lowercase and remove extra whitespace
+    const words = firstParagraph.toLowerCase().split(/\s+/);
+    const keyphraseWords = keyphrase.toLowerCase().split(/\s+/);
+
+    // Check if all words from the keyphrase appear in sequence
+    const normalizedParagraph = words.join(' ');
+    const normalizedKeyphrase = keyphraseWords.join(' ');
 
     console.log("Normalized paragraph:", normalizedParagraph);
     console.log("Normalized keyphrase:", normalizedKeyphrase);
