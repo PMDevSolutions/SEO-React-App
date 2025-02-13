@@ -27,11 +27,20 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
     // Get all text content
     const content = $("body").text().trim();
 
-    // Get paragraphs
-    const paragraphs = $("p")
-      .map((_: any, el: any) => $(el).text().trim())
+    // Get paragraphs - improved to handle more cases
+    const paragraphs = $("article p, main p, .content p, #content p, .post-content p, p")
+      .map((_: any, el: any) => {
+        const text = $(el).text().trim();
+        console.log("Found paragraph:", text); // Debug log
+        return text;
+      })
       .get()
       .filter((text: string) => text.length > 0);
+
+    console.log("Total paragraphs found:", paragraphs.length); // Debug log
+    if (paragraphs.length > 0) {
+      console.log("First paragraph:", paragraphs[0]); // Debug log
+    }
 
     // Get subheadings
     const subheadings = $("h1, h2, h3, h4, h5, h6")
