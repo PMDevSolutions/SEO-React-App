@@ -123,7 +123,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   await addCheck(
     "Keyphrase in URL",
     isHome
-      ? "Homepage URL doesn't require the keyphrase"
+      ? "This is the homepage URL, so the keyphrase is not required in the URL ✨"
       : "The URL should contain the focus keyphrase",
     slugHasKeyphrase,
     url
