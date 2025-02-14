@@ -34,6 +34,17 @@ function calculateKeyphraseDensity(content: string, keyphrase: string): {
   };
 }
 
+// Add this helper function at the top with other helpers
+function isHomePage(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    // Consider it a homepage if the path is "/" or empty, ignoring query parameters
+    return urlObj.pathname === "/" || urlObj.pathname === "";
+  } catch {
+    return false;
+  }
+}
+
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
   const checks: SEOCheck[] = [];
@@ -107,10 +118,13 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   );
 
   // 3. URL analysis
-  const slugHasKeyphrase = url.toLowerCase().includes(keyphrase.toLowerCase());
+  const isHome = isHomePage(url);
+  const slugHasKeyphrase = isHome || url.toLowerCase().includes(keyphrase.toLowerCase());
   await addCheck(
     "Keyphrase in URL",
-    "The URL should contain the focus keyphrase",
+    isHome
+      ? "Homepage URL doesn't require the keyphrase"
+      : "The URL should contain the focus keyphrase",
     slugHasKeyphrase,
     url
   );
