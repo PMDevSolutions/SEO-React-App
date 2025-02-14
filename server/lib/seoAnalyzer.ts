@@ -86,7 +86,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     const messages: SuccessMessages = {
       "Keyphrase in Title": "Great job! Your title includes the target keyphrase.",
       "Keyphrase in Meta Description": "Perfect! Your meta description effectively uses the keyphrase.",
-      "Keyphrase in URL": "Excellent! Your URL is SEO-friendly with the keyphrase.",
+      "Keyphrase in URL": isHomePage(url) ? "All good here, since it's the homepage! ✨" : "Excellent! Your URL is SEO-friendly with the keyphrase.",
       "Content Length": "Well done! Your content length is good for SEO.",
       "Keyphrase Density": "Perfect! Your keyphrase density is within the optimal range.",
       "Keyphrase in Introduction": "Excellent! You've included the keyphrase in your introduction.",
