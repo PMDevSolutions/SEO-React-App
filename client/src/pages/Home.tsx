@@ -55,7 +55,8 @@ const iconAnimation = {
 const shouldShowCopyButton = (checkTitle: string) => {
   return !checkTitle.toLowerCase().includes("density") && 
          !checkTitle.toLowerCase().includes("image format") &&
-         !checkTitle.toLowerCase().includes("content length");
+         !checkTitle.toLowerCase().includes("content length") &&
+         !checkTitle.toLowerCase().includes("og image");
 };
 
 export default function Home() {

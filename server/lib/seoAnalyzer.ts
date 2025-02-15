@@ -269,13 +269,17 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     parseInt(scrapedData.ogMetadata.imageHeight) >= 630
   );
 
+  const currentSize = hasOGImage ?
+    `Current image size: ${scrapedData.ogMetadata.imageWidth || 'unknown'}x${scrapedData.ogMetadata.imageHeight || 'unknown'}px.` :
+    'No OG image found.';
+
   await addCheck(
     "OG Image",
     hasOGImage
       ? (validOGImageSize
-        ? "Open Graph image is present with recommended dimensions (1200x630 or larger)"
-        : "Open Graph image is present but may not meet size recommendations")
-      : "Open Graph image is missing",
+        ? `Open Graph image is present with recommended dimensions (1200x630 or larger). ${currentSize}`
+        : `Open Graph image is present but may not meet size recommendations. ${currentSize} Recommended size is at least 1200x630px.`)
+      : `Open Graph image is missing. ${currentSize} Add an OG image with dimensions of at least 1200x630px.`,
     hasOGImage && validOGImageSize,
     JSON.stringify(scrapedData.ogMetadata)
   );
