@@ -51,6 +51,23 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   let passedChecks = 0;
   let failedChecks = 0;
 
+  // Success messages object moved inside the function to access url parameter
+  const messages: SuccessMessages = {
+    "Keyphrase in Title": "Great job! Your title includes the target keyphrase.",
+    "Keyphrase in Meta Description": "Perfect! Your meta description effectively uses the keyphrase.",
+    "Keyphrase in URL": isHomePage(url) ? "All good here, since it's the homepage! ✨" : "Excellent! Your URL is SEO-friendly with the keyphrase.",
+    "Content Length": "Well done! Your content length is good for SEO.",
+    "Keyphrase Density": "Perfect! Your keyphrase density is within the optimal range.",
+    "Keyphrase in Introduction": "Excellent! You've included the keyphrase in your introduction.",
+    "Keyphrase in Subheadings": "Great work! Your subheadings include the keyphrase.",
+    "Image Alt Attributes": "Well done! Your images are properly optimized with the keyphrase.",
+    "Internal Links": "Perfect! You have a good number of internal links.",
+    "Outbound Links": "Excellent! You've included relevant outbound links.",
+    "Next-Gen Image Formats": "Excellent! Your images use modern, optimized formats.",
+    "OG Image": "Great job! Your page has a properly configured Open Graph image.",
+    "OG Title and Description": "Perfect! Open Graph title and description are well configured."
+  };
+
   // Helper function to add check results
   const addCheck = async (
     title: string,
@@ -61,7 +78,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   ) => {
     let recommendation = "";
 
-    // Update counting logic to be independent of recommendation generation
     if (passed) {
       passedChecks++;
     } else {
@@ -71,7 +87,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       }
     }
 
-    const successDescription = passed ? getSuccessMessage(title) : description;
+    const successDescription = passed ? messages[title] : description;
 
     checks.push({
       title,
@@ -79,24 +95,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       passed,
       recommendation
     });
-  };
-
-  // Helper function to get encouraging success messages
-  const getSuccessMessage = (checkType: string): string => {
-    const messages: SuccessMessages = {
-      "Keyphrase in Title": "Great job! Your title includes the target keyphrase.",
-      "Keyphrase in Meta Description": "Perfect! Your meta description effectively uses the keyphrase.",
-      "Keyphrase in URL": isHomePage(url) ? "All good here, since it's the homepage! ✨" : "Excellent! Your URL is SEO-friendly with the keyphrase.",
-      "Content Length": "Well done! Your content length is good for SEO.",
-      "Keyphrase Density": "Perfect! Your keyphrase density is within the optimal range.",
-      "Keyphrase in Introduction": "Excellent! You've included the keyphrase in your introduction.",
-      "Keyphrase in Subheadings": "Great work! Your subheadings include the keyphrase.",
-      "Image Alt Attributes": "Well done! Your images are properly optimized with the keyphrase.",
-      "Internal Links": "Perfect! You have a good number of internal links.",
-      "Outbound Links": "Excellent! You've included relevant outbound links.",
-      "Next-Gen Image Formats": "Excellent! Your images use modern, optimized formats."
-    };
-    return messages[checkType] || "Well done!";
   };
 
   // 1. Title analysis
@@ -260,6 +258,48 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     hasNextGenImages,
     scrapedData.images.map(img => img.src).join(', '),
     true // Skip GPT recommendation as we have custom recommendations
+  );
+
+  // Add new OG Image check
+  const hasOGImage = Boolean(scrapedData.ogMetadata.image);
+  const validOGImageSize = Boolean(
+    scrapedData.ogMetadata.imageWidth &&
+    scrapedData.ogMetadata.imageHeight &&
+    parseInt(scrapedData.ogMetadata.imageWidth) >= 1200 &&
+    parseInt(scrapedData.ogMetadata.imageHeight) >= 630
+  );
+
+  await addCheck(
+    "OG Image",
+    hasOGImage
+      ? (validOGImageSize
+        ? "Open Graph image is present with recommended dimensions (1200x630 or larger)"
+        : "Open Graph image is present but may not meet size recommendations")
+      : "Open Graph image is missing",
+    hasOGImage && validOGImageSize,
+    JSON.stringify(scrapedData.ogMetadata)
+  );
+
+  // Add OG Title and Description check
+  const hasOGTitle = Boolean(scrapedData.ogMetadata.title);
+  const hasOGDescription = Boolean(scrapedData.ogMetadata.description);
+  const ogTitleLength = scrapedData.ogMetadata.title.length;
+  const ogDescLength = scrapedData.ogMetadata.description.length;
+
+  const validOGMeta = hasOGTitle && hasOGDescription &&
+    ogTitleLength >= 10 && ogTitleLength <= 70 &&
+    ogDescLength >= 100 && ogDescLength <= 200;
+
+  await addCheck(
+    "OG Title and Description",
+    validOGMeta
+      ? "Open Graph title and description are properly set with optimal lengths"
+      : "Open Graph title and/or description need optimization",
+    validOGMeta,
+    JSON.stringify({
+      title: scrapedData.ogMetadata.title,
+      description: scrapedData.ogMetadata.description
+    })
   );
 
   return {

@@ -9,6 +9,13 @@ interface ScrapedData {
   images: Array<{ src: string; alt: string }>;
   internalLinks: string[];
   outboundLinks: string[];
+  ogMetadata: {
+    title: string;
+    description: string;
+    image: string;
+    imageWidth: string;
+    imageHeight: string;
+  };
 }
 
 export async function scrapeWebpage(url: string): Promise<ScrapedData> {
@@ -23,6 +30,15 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
     // Extract meta information
     const title = $("title").text().trim();
     const metaDescription = $('meta[name="description"]').attr("content") || "";
+
+    // Extract Open Graph metadata
+    const ogMetadata = {
+      title: $('meta[property="og:title"]').attr("content") || "",
+      description: $('meta[property="og:description"]').attr("content") || "",
+      image: $('meta[property="og:image"]').attr("content") || "",
+      imageWidth: $('meta[property="og:image:width"]').attr("content") || "",
+      imageHeight: $('meta[property="og:image:height"]').attr("content") || ""
+    };
 
     // Get all text content
     const content = $("body").text().trim();
@@ -95,6 +111,7 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       images,
       internalLinks,
       outboundLinks,
+      ogMetadata,
     };
   } catch (error: any) {
     throw new Error(`Failed to scrape webpage: ${error.message}`);

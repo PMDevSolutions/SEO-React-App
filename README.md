@@ -4,7 +4,7 @@ An advanced SEO optimization platform that analyzes websites and provides intell
 
 ## Core SEO Analysis Features
 
-Our platform performs 11 comprehensive SEO checks, providing detailed analysis and AI-powered recommendations:
+Our platform performs comprehensive SEO checks, providing detailed analysis and AI-powered recommendations:
 
 1. **Title Tag Optimization**
    - Verifies keyphrase presence in the page title
@@ -60,6 +60,12 @@ Our platform performs 11 comprehensive SEO checks, providing detailed analysis a
     - Detects next-gen image formats (WebP, AVIF)
     - Analyzes image optimization
     - Provides format conversion recommendations
+
+12. **Open Graph Optimization**
+    - Ensures Open Graph (OG) image is set and properly sized
+    - Validates image dimensions (1200x630 or larger)
+    - Verifies OG title and description presence
+    - Checks metadata length optimization
 
 ## Technical Features
 
