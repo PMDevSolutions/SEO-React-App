@@ -281,7 +281,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
         : `Open Graph image is present but may not meet size recommendations. ${currentSize} Recommended size is at least 1200x630px.`)
       : `Open Graph image is missing. ${currentSize} Add an OG image with dimensions of at least 1200x630px.`,
     hasOGImage && validOGImageSize,
-    JSON.stringify(scrapedData.ogMetadata)
+    `Current Open Graph image: ${scrapedData.ogMetadata.image || 'none'}. ${currentSize}`,
+    true // Skip GPT recommendation since we have detailed custom message
   );
 
   // Add OG Title and Description check
