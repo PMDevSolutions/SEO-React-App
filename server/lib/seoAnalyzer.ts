@@ -324,13 +324,24 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   const keyphraseInH1H2 = h1HasKeyphrase || h2HasKeyphrase;
 
+  // Create a detailed context of the current heading structure with keyphrase status
+  const h1Context = h1Tags.length > 0
+    ? `H1 headings (${h1HasKeyphrase ? 'contains keyphrase' : 'missing keyphrase'}): ${h1Tags.map(h => `"${h.text}"`).join(', ')}`
+    : 'No H1 headings found on page';
+
+  const h2Context = h2Tags.length > 0
+    ? `H2 headings (${h2HasKeyphrase ? 'contains keyphrase' : 'missing keyphrase'}): ${h2Tags.map(h => `"${h.text}"`).join(', ')}`
+    : 'No H2 headings found on page';
+
+  const headingKeywordContext = `${h1Context}\n${h2Context}\nTarget keyphrase: "${keyphrase}"`;
+
   await addCheck(
     "H1/H2 Keyword Usage",
     keyphraseInH1H2
       ? `Great! ${h1HasKeyphrase ? 'H1' : 'H2'} headings include your keyphrase.`
       : "Your primary headings (H1/H2) should include the target keyphrase for better SEO.",
     keyphraseInH1H2,
-    `H1 tags: ${h1Tags.map(h => h.text).join(', ')}\nH2 tags: ${h2Tags.map(h => h.text).join(', ')}`
+    headingKeywordContext
   );
 
   // Add heading hierarchy check
@@ -348,16 +359,38 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   // Check for proper level progression (no jumps like H1 -> H3 without H2)
   let prevLevel = 0;
+  let skippedLevel = null;
   for (const heading of allHeadings) {
     if (heading.level > prevLevel + 1 && prevLevel > 0) {
       // Skipped a level (e.g., H1 -> H3)
       hasProperLevelOrder = false;
+      skippedLevel = `H${prevLevel} → H${heading.level}`;
       break;
     }
     prevLevel = heading.level;
   }
 
   const hasProperHeadingHierarchy = hasProperHeadingStructure && hasProperLevelOrder;
+
+  // Create a visual heading structure representation
+  const headingStructureVisual = allHeadings.map(h => {
+    const prefix = `H${h.level}`;
+    const text = h.text.length > 30 ? h.text.substring(0, 30) + '...' : h.text;
+    return `${prefix}: "${text}"`;
+  }).join('\n');
+
+  let hierarchyIssue = "";
+  if (!hasH1) {
+    hierarchyIssue = "⚠️ Issue: Missing H1 heading";
+  } else if (h1Tags.length > 1) {
+    hierarchyIssue = `⚠️ Issue: Multiple H1 headings (${h1Tags.length} found)`;
+  } else if (!hasH2) {
+    hierarchyIssue = "⚠️ Issue: Missing H2 headings";
+  } else if (!hasProperLevelOrder) {
+    hierarchyIssue = `⚠️ Issue: Heading level skip detected (${skippedLevel})`;
+  }
+
+  const fullHierarchyContext = `Current heading structure:\n${headingStructureVisual}\n\n${hierarchyIssue}`;
 
   await addCheck(
     "Heading Hierarchy",
@@ -373,7 +406,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
               ? "Your heading structure skips levels (e.g., H1 followed directly by H3). This can confuse search engines and assistive technologies."
               : "Your heading structure needs improvement. Follow a logical hierarchy (H1 → H2 → H3) for better SEO.",
     hasProperHeadingHierarchy,
-    `Heading structure: ${allHeadings.map(h => `H${h.level}`).join(' → ')}`,
+    fullHierarchyContext,
     true // Use our custom recommendation
   );
 
