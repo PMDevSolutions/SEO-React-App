@@ -45,6 +45,25 @@ function isHomePage(url: string): boolean {
   }
 }
 
+// Map of check titles to their SEO priority
+const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
+  "Keyphrase in Title": "high",
+  "Keyphrase in Meta Description": "high",
+  "Keyphrase in URL": "medium",
+  "Content Length": "high",
+  "Keyphrase Density": "medium",
+  "Keyphrase in Introduction": "medium",
+  "Keyphrase in Subheadings": "medium",
+  "Image Alt Attributes": "low",
+  "Internal Links": "medium",
+  "Outbound Links": "low",
+  "Next-Gen Image Formats": "low",
+  "OG Image": "medium",
+  "OG Title and Description": "medium",
+  "H1/H2 Keyword Usage": "high",
+  "Heading Hierarchy": "high"
+};
+
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
   const checks: SEOCheck[] = [];
@@ -91,11 +110,15 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
     const successDescription = passed ? messages[title] : description;
 
+    // Get priority for this check (default to medium if not found)
+    const priority = checkPriorities[title] || "medium";
+
     checks.push({
       title,
       description: successDescription,
       passed,
-      recommendation
+      recommendation,
+      priority
     });
   };
 

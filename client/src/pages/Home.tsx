@@ -8,7 +8,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, CheckCircle, XCircle, Copy } from "lucide-react";
+import { 
+  Loader2, 
+  CheckCircle, 
+  XCircle, 
+  Copy, 
+  AlertTriangle, 
+  CircleAlert, 
+  Info 
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -59,6 +67,34 @@ const shouldShowCopyButton = (checkTitle: string) => {
          !checkTitle.toLowerCase().includes("og image") &&
          !checkTitle.toLowerCase().includes("heading hierarchy") &&
          !checkTitle.toLowerCase().includes("h1/h2 keyword");
+};
+
+// Get priority icon based on priority level
+const getPriorityIcon = (priority: string, className: string = "h-4 w-4") => {
+  switch (priority) {
+    case 'high':
+      return <AlertTriangle className={`${className} text-redText`} />;
+    case 'medium':
+      return <CircleAlert className={`${className} text-yellowText`} />;
+    case 'low':
+      return <Info className={`${className} text-blueText`} />;
+    default:
+      return null;
+  }
+};
+
+// Get priority text based on priority level
+const getPriorityText = (priority: string) => {
+  switch (priority) {
+    case 'high':
+      return "High Priority";
+    case 'medium':
+      return "Medium Priority";
+    case 'low':
+      return "Low Priority";
+    default:
+      return "";
+  }
 };
 
 export default function Home() {
@@ -243,6 +279,25 @@ export default function Home() {
                                   )}
                                 </motion.div>
                                 {check.title}
+
+                                {/* Priority Icon */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <motion.div
+                                        variants={iconAnimation}
+                                        initial="initial"
+                                        animate="animate"
+                                        className="ml-2"
+                                      >
+                                        {getPriorityIcon(check.priority)}
+                                      </motion.div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>SEO Impact: {getPriorityText(check.priority)}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </motion.div>
                               <p className="text-sm text-muted-foreground">
                                 {check.description}

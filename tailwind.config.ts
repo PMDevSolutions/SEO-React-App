@@ -24,6 +24,8 @@ export default {
         border: "var(--border)",
         greenText: "var(--greenText)",
         redText: "var(--redText)",
+        yellowText: "var(--yellowText)",
+        blueText: "var(--blueText)",
         card: {
           DEFAULT: "var(--background2)",
           foreground: "var(--text1)",

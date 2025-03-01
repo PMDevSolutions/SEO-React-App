@@ -3,6 +3,7 @@ export interface SEOCheck {
   description: string;
   passed: boolean;
   recommendation?: string;
+  priority: 'high' | 'medium' | 'low'; // Added priority field
 }
 
 export interface SEOAnalysisResult {
