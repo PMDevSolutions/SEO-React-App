@@ -6,6 +6,7 @@ interface ScrapedData {
   content: string;
   paragraphs: string[];
   subheadings: string[];
+  headings: Array<{ level: number; text: string }>;
   images: Array<{ src: string; alt: string }>;
   internalLinks: string[];
   outboundLinks: string[];
@@ -74,6 +75,19 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       .get()
       .filter((text: string) => text.length > 0);
 
+    // Get headings with their levels
+    const headings = $("h1, h2, h3, h4, h5, h6")
+      .map((_: any, el: any) => {
+        const tagName = $(el).prop('tagName').toLowerCase();
+        const level = parseInt(tagName.substring(1), 10); // Extract the number from "h1", "h2", etc.
+        return {
+          level,
+          text: $(el).text().trim()
+        };
+      })
+      .get()
+      .filter((heading: { level: number; text: string }) => heading.text.length > 0);
+
     // Get images with alt text
     const images = $("img")
       .map((_: any, el: any) => ({
@@ -108,6 +122,7 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       content,
       paragraphs,
       subheadings,
+      headings,
       images,
       internalLinks,
       outboundLinks,

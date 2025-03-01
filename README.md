@@ -67,6 +67,16 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Verifies OG title and description presence
     - Checks metadata length optimization
 
+13. **H1/H2 Keyword Usage**
+    - Verifies keyphrase presence in H1 and H2 headings
+    - Ensures primary heading contains the target keyword
+    - Analyzes keyword placement in headings
+
+14. **Heading Hierarchy**
+    - Validates proper heading structure (H1 → H2 → H3)
+    - Ensures single H1 tag usage per page
+    - Checks for logical heading progression
+
 ## Technical Features
 
 ### Frontend

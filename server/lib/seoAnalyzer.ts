@@ -65,7 +65,9 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Outbound Links": "Excellent! You've included relevant outbound links.",
     "Next-Gen Image Formats": "Excellent! Your images use modern, optimized formats.",
     "OG Image": "Great job! Your page has a properly configured Open Graph image.",
-    "OG Title and Description": "Perfect! Open Graph title and description are well configured."
+    "OG Title and Description": "Perfect! Open Graph title and description are well configured.",
+    "H1/H2 Keyword Usage": "Excellent! Your H1 and H2 headings effectively include the keyphrase.",
+    "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy."
   };
 
   // Helper function to add check results
@@ -305,6 +307,74 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       title: scrapedData.ogMetadata.title,
       description: scrapedData.ogMetadata.description
     })
+  );
+
+  // Add new H1/H2 keyword analysis check
+  // Extract H1 and H2 headings using the new headings data structure
+  const h1Tags = scrapedData.headings.filter(heading => heading.level === 1);
+  const h2Tags = scrapedData.headings.filter(heading => heading.level === 2);
+
+  const h1HasKeyphrase = h1Tags.some(heading =>
+    heading.text.toLowerCase().includes(keyphrase.toLowerCase())
+  );
+
+  const h2HasKeyphrase = h2Tags.some(heading =>
+    heading.text.toLowerCase().includes(keyphrase.toLowerCase())
+  );
+
+  const keyphraseInH1H2 = h1HasKeyphrase || h2HasKeyphrase;
+
+  await addCheck(
+    "H1/H2 Keyword Usage",
+    keyphraseInH1H2
+      ? `Great! ${h1HasKeyphrase ? 'H1' : 'H2'} headings include your keyphrase.`
+      : "Your primary headings (H1/H2) should include the target keyphrase for better SEO.",
+    keyphraseInH1H2,
+    `H1 tags: ${h1Tags.map(h => h.text).join(', ')}\nH2 tags: ${h2Tags.map(h => h.text).join(', ')}`
+  );
+
+  // Add heading hierarchy check
+  // Check for proper heading hierarchy
+  const hasH1 = h1Tags.length > 0;
+  const hasH2 = h2Tags.length > 0;
+  const hasProperHeadingStructure = hasH1 && hasH2 && h1Tags.length === 1;
+
+  // Check if heading levels are used in proper order (no skipping levels)
+  let hasProperLevelOrder = true;
+  const allHeadings = [...scrapedData.headings].sort((a, b) => {
+    // Sort by position in the original array
+    return scrapedData.headings.indexOf(a) - scrapedData.headings.indexOf(b);
+  });
+
+  // Check for proper level progression (no jumps like H1 -> H3 without H2)
+  let prevLevel = 0;
+  for (const heading of allHeadings) {
+    if (heading.level > prevLevel + 1 && prevLevel > 0) {
+      // Skipped a level (e.g., H1 -> H3)
+      hasProperLevelOrder = false;
+      break;
+    }
+    prevLevel = heading.level;
+  }
+
+  const hasProperHeadingHierarchy = hasProperHeadingStructure && hasProperLevelOrder;
+
+  await addCheck(
+    "Heading Hierarchy",
+    hasProperHeadingHierarchy
+      ? "Your page has a proper heading structure with a single H1 followed by appropriate subheadings."
+      : !hasH1
+        ? "Your page is missing an H1 heading, which is crucial for SEO and document structure."
+        : h1Tags.length > 1
+          ? "Your page has multiple H1 headings. Best practice is to have a single H1 heading per page."
+          : !hasH2
+            ? "Your page is missing H2 headings. Use H2 headings to structure your content under the main H1 heading."
+            : !hasProperLevelOrder
+              ? "Your heading structure skips levels (e.g., H1 followed directly by H3). This can confuse search engines and assistive technologies."
+              : "Your heading structure needs improvement. Follow a logical hierarchy (H1 → H2 → H3) for better SEO.",
+    hasProperHeadingHierarchy,
+    `Heading structure: ${allHeadings.map(h => `H${h.level}`).join(' → ')}`,
+    true // Use our custom recommendation
   );
 
   return {

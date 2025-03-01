@@ -56,7 +56,8 @@ const shouldShowCopyButton = (checkTitle: string) => {
   return !checkTitle.toLowerCase().includes("density") && 
          !checkTitle.toLowerCase().includes("image format") &&
          !checkTitle.toLowerCase().includes("content length") &&
-         !checkTitle.toLowerCase().includes("og image");
+         !checkTitle.toLowerCase().includes("og image") &&
+         !checkTitle.toLowerCase().includes("heading hierarchy");
 };
 
 export default function Home() {
