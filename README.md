@@ -77,6 +77,32 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Ensures single H1 tag usage per page
     - Checks for logical heading progression
 
+## SEO Priority System
+
+Our platform uses a priority system to help you focus on the most impactful SEO improvements:
+
+- **High Priority** 🔴 - Critical issues that significantly impact search engine rankings
+  - Title tag optimization
+  - Meta description analysis
+  - Content length
+  - H1/H2 keyword usage
+  - Heading hierarchy
+
+- **Medium Priority** 🟡 - Important issues that should be addressed for better SEO
+  - URL structure
+  - Keyphrase density
+  - Introduction optimization
+  - Subheading structure
+  - Internal links
+  - Open Graph metadata
+
+- **Low Priority** 🔵 - Minor issues that provide incremental SEO improvements
+  - Image alt attributes
+  - Outbound links
+  - Next-gen image formats
+
+Each check includes a visual priority indicator to help you prioritize your optimization efforts.
+
 ## Technical Features
 
 ### Frontend
@@ -94,6 +120,7 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
 
 ### User Experience
 - Clear pass/fail indicators (✅/❌)
+- Priority-based recommendations (🔴/🟡/🔵)
 - Copyable GPT-generated recommendations
 - Responsive design
 - Dark mode optimization
