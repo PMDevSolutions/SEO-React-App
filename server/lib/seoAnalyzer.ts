@@ -53,7 +53,6 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Content Length": "high",
   "Keyphrase Density": "medium",
   "Keyphrase in Introduction": "medium",
-  "Keyphrase in Subheadings": "medium",
   "Image Alt Attributes": "low",
   "Internal Links": "medium",
   "Outbound Links": "low",
@@ -63,7 +62,7 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Keyphrase in H1 Heading": "high",
   "Keyphrase in H2 Headings": "medium",
   "Heading Hierarchy": "high",
-  "Code Minification": "low" // Add this new check
+  "Code Minification": "low"
 };
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
@@ -80,7 +79,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Content Length": "Well done! Your content length is good for SEO.",
     "Keyphrase Density": "Perfect! Your keyphrase density is within the optimal range.",
     "Keyphrase in Introduction": "Excellent! You've included the keyphrase in your introduction.",
-    "Keyphrase in Subheadings": "Great work! Your subheadings include the keyphrase.",
     "Image Alt Attributes": "Well done! Your images are properly optimized with the keyphrase.",
     "Internal Links": "Perfect! You have a good number of internal links.",
     "Outbound Links": "Excellent! You've included relevant outbound links.",
@@ -219,16 +217,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     introContext
   );
 
-  // 7. Subheadings analysis
-  const subheadingsWithKeyphrase = scrapedData.subheadings.some(
-    (heading: string) => heading.toLowerCase().includes(keyphrase.toLowerCase())
-  );
-  await addCheck(
-    "Keyphrase in Subheadings",
-    "The focus keyphrase should appear in at least one subheading",
-    subheadingsWithKeyphrase,
-    scrapedData.subheadings.join("\n")
-  );
+  // Removed duplicate "Keyphrase in Subheadings" check since it's covered by "Keyphrase in H2 Headings"
 
   // 8. Image alt text analysis
   const altTextsWithKeyphrase = scrapedData.images.some(
