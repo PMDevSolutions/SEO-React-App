@@ -63,7 +63,7 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Keyphrase in H1 Heading": "high",
   "Keyphrase in H2 Headings": "medium",
   "Heading Hierarchy": "high",
-  "Code Minification": "medium" // Add this new check
+  "Code Minification": "low" // Add this new check
 };
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
