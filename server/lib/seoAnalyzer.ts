@@ -373,15 +373,54 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     `${h1Context}\nTarget keyphrase: "${keyphrase}"`
   );
 
-  // Check for keyphrase in H2 headings (separate check)
-  const h2HasKeyphrase = h2Tags.some(heading =>
+  // Check for keyphrase in H2 headings with more flexible matching
+  let h2HasKeyphrase = h2Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
+  
+  // If exact match fails, try checking for individual keywords
+  if (!h2HasKeyphrase && h2Tags.length > 0) {
+    console.log("H2 exact match failed, trying word-by-word matching...");
+    const keyphraseWords = keyphrase.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    
+    if (keyphraseWords.length > 0) {
+      // Consider it a match if at least one H2 contains all important words from keyphrase
+      const allWordsFoundInAnyH2 = h2Tags.some(heading => {
+        const headingText = heading.text.toLowerCase();
+        return keyphraseWords.every(word => headingText.includes(word));
+      });
+      
+      // Or if all important words appear across multiple H2s
+      const allWordsFoundAcrossH2s = keyphraseWords.every(word => 
+        h2Tags.some(heading => heading.text.toLowerCase().includes(word))
+      );
+      
+      // Consider it a pass if either condition is met
+      h2HasKeyphrase = allWordsFoundInAnyH2 || allWordsFoundAcrossH2s;
+      
+      console.log("H2 tags:", h2Tags.map(h => h.text));
+      console.log("Keyphrase words:", keyphraseWords);
+      console.log("All words found in any H2:", allWordsFoundInAnyH2);
+      console.log("All words found across H2s:", allWordsFoundAcrossH2s);
+    }
+  }
 
-  // Create context for H2 keyphrase check
-  const h2Context = h2Tags.length > 0
-    ? `H2 headings ${h2HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}: ${h2Tags.map(h => `"${h.text}"`).join(', ')}`
-    : 'No H2 headings found on page';
+  // Create detailed context for H2 keyphrase check
+  let h2Context = '';
+  if (h2Tags.length === 0) {
+    h2Context = 'No H2 headings found on page';
+  } else {
+    h2Context = `H2 headings ${h2HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}:\n`;
+    h2Tags.forEach((h, i) => {
+      h2Context += `${i+1}. "${h.text}"\n`;
+    });
+    h2Context += `\nTarget keyphrase: "${keyphrase}"\n`;
+    
+    // Add suggestions if keyphrase is missing
+    if (!h2HasKeyphrase) {
+      h2Context += '\nConsider updating at least one H2 to include your target keyphrase.';
+    }
+  }
 
   // Add H2 keyphrase check
   await addCheck(
