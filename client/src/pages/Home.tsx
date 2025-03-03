@@ -24,9 +24,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeSEO } from "@/lib/api";
-import type { SEOAnalysisResult } from "@/lib/types";
+import type { SEOAnalysisResult, SEOCheck } from "@/lib/types";
 
 const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -98,9 +99,65 @@ const getPriorityText = (priority: string) => {
   }
 };
 
+// Group checks by category
+const groupChecksByCategory = (checks: SEOCheck[]) => {
+  const categories = {
+    "Page Settings": ["Keyphrase in Title", "Keyphrase in Meta Description", "Keyphrase in URL", "OG Title and Description"],
+    "Content": ["Keyphrase in H1 Heading", "Keyphrase in H2 Headings", "Heading Hierarchy", "Content Length", "Keyphrase Density", "Keyphrase in Introduction"],
+    "Links": ["Internal Links", "Outbound Links"],
+    "Images": ["Image Alt Attributes", "Next-Gen Image Formats", "OG Image"],
+    "Technical": ["Code Minification"]
+  };
+
+  const grouped: Record<string, SEOCheck[]> = {};
+
+  // Initialize all categories
+  Object.keys(categories).forEach(category => {
+    grouped[category] = [];
+  });
+
+  // Group checks by category
+  checks.forEach(check => {
+    for (const [category, checkTitles] of Object.entries(categories)) {
+      if (checkTitles.includes(check.title)) {
+        grouped[category].push(check);
+        break;
+      }
+    }
+  });
+
+  return grouped;
+};
+
+// Get status for a category
+const getCategoryStatus = (checks: SEOCheck[]) => {
+  if (!checks || checks.length === 0) return "neutral";
+
+  const passedCount = checks.filter(check => check.passed).length;
+
+  if (passedCount === checks.length) return "complete";
+  if (passedCount === 0) return "todo";
+  return "inprogress";
+};
+
+// Get status icon for a category
+const getCategoryStatusIcon = (status: string) => {
+  switch (status) {
+    case "complete":
+      return <CheckCircle className="h-6 w-6 text-greenText" />;
+    case "inprogress":
+      return <CircleAlert className="h-6 w-6 text-yellowText" />;
+    case "todo":
+      return <XCircle className="h-6 w-6 text-redText" />;
+    default:
+      return <Info className="h-6 w-6 text-blueText" />;
+  }
+};
+
 export default function Home() {
   const { toast } = useToast();
   const [results, setResults] = useState<SEOAnalysisResult | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -162,6 +219,9 @@ export default function Home() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     mutation.mutate(values);
   };
+
+  // Group checks for the overview tab
+  const groupedChecks = results ? groupChecksByCategory(results.checks) : null;
 
   return (
     <motion.div
@@ -267,105 +327,151 @@ export default function Home() {
                   </motion.div>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[600px] pr-4 w-full">
-                    <motion.div
-                      variants={container}
-                      initial="hidden"
-                      animate="show"
-                      className="space-y-5 w-full"
-                    >
-                      {results.checks.map((check, index) => (
-                        <motion.div
-                          key={index}
-                          variants={item}
-                          className="border p-4 w-full rounded-lg hover:bg-background2 transition-colors"
-                          whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <div className="flex items-start justify-between w-full">
-                            <div className="space-y-2 flex-1">
-                              <motion.div
-                                className="font-medium flex items-center gap-2"
-                              >
-                                <motion.div
-                                  variants={iconAnimation}
-                                  initial="initial"
-                                  animate="animate"
-                                >
-                                  {check.passed ? (
-                                    <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
-                                  ) : (
-                                    <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
-                                  )}
-                                </motion.div>
-                                {check.title}
+                  <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="w-full mb-6">
+                      <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
+                      <TabsTrigger value="all" className="flex-1">All Checks</TabsTrigger>
+                    </TabsList>
 
-                                {/* Priority Icon */}
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <motion.div
-                                        variants={iconAnimation}
-                                        initial="initial"
-                                        animate="animate"
-                                        className="ml-2"
-                                      >
-                                        {getPriorityIcon(check.priority)}
-                                      </motion.div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>SEO Impact: {getPriorityText(check.priority)}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </motion.div>
-                              <p className="text-sm text-muted-foreground">
-                                {check.description}
-                              </p>
+                    <TabsContent value="overview" className="space-y-6">
+                      {groupedChecks && Object.entries(groupedChecks).map(([category, checks]) => {
+                        const status = getCategoryStatus(checks);
+                        const passedCount = checks.filter(check => check.passed).length;
+                        return (
+                          <motion.div
+                            key={category}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="border rounded-lg p-4 hover:bg-background2 transition-colors cursor-pointer"
+                            onClick={() => setActiveTab("all")}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-lg font-medium">{category} SEO</h3>
+                              <div className="flex items-center gap-2">
+                                {getCategoryStatusIcon(status)}
+                                <span className="text-sm text-muted-foreground">
+                                  {passedCount}/{checks.length} passed
+                                </span>
+                              </div>
                             </div>
-                            {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <motion.div
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      className="ml-4"
-                                    >
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex items-center gap-2"
-                                        onClick={() => copyToClipboard(check.recommendation)}
-                                      >
-                                        <Copy className="h-4 w-4" />
-                                        Copy
-                                      </Button>
-                                    </motion.div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Copy recommendation to clipboard</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </div>
-                          {!check.passed && check.recommendation && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                              {checks.map((check, idx) => (
+                                <div key={idx} className="flex items-center gap-1.5">
+                                  {check.passed ? 
+                                    <CheckCircle className="h-4 w-4 text-greenText flex-shrink-0" /> : 
+                                    <XCircle className="h-4 w-4 text-redText flex-shrink-0" />
+                                  }
+                                  <span>{check.title}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </TabsContent>
+
+                    <TabsContent value="all">
+                      <ScrollArea className="h-[600px] pr-4 w-full">
+                        <motion.div
+                          variants={container}
+                          initial="hidden"
+                          animate="show"
+                          className="space-y-5 w-full"
+                        >
+                          {results.checks.map((check, index) => (
                             <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="mt-4 text-sm p-4 bg-background3 rounded-md w-full"
+                              key={index}
+                              variants={item}
+                              className="border p-4 w-full rounded-lg hover:bg-background2 transition-colors"
+                              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
                             >
-                              {check.recommendation}
+                              <div className="flex items-start justify-between w-full">
+                                <div className="space-y-2 flex-1">
+                                  <motion.div
+                                    className="font-medium flex items-center gap-2"
+                                  >
+                                    <motion.div
+                                      variants={iconAnimation}
+                                      initial="initial"
+                                      animate="animate"
+                                    >
+                                      {check.passed ? (
+                                        <CheckCircle className="h-5 w-5 text-greenText flex-shrink-0" />
+                                      ) : (
+                                        <XCircle className="h-5 w-5 text-redText flex-shrink-0" />
+                                      )}
+                                    </motion.div>
+                                    {check.title}
+
+                                    {/* Priority Icon */}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <motion.div
+                                            variants={iconAnimation}
+                                            initial="initial"
+                                            animate="animate"
+                                            className="ml-2"
+                                          >
+                                            {getPriorityIcon(check.priority)}
+                                          </motion.div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>SEO Impact: {getPriorityText(check.priority)}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </motion.div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {check.description}
+                                  </p>
+                                </div>
+                                {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <motion.div
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          className="ml-4"
+                                        >
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex items-center gap-2"
+                                            onClick={() => copyToClipboard(check.recommendation)}
+                                          >
+                                            <Copy className="h-4 w-4" />
+                                            Copy
+                                          </Button>
+                                        </motion.div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Copy recommendation to clipboard</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                              {!check.passed && check.recommendation && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="mt-4 text-sm p-4 bg-background3 rounded-md w-full"
+                                >
+                                  {check.recommendation}
+                                </motion.div>
+                              )}
                             </motion.div>
-                          )}
+                          ))}
                         </motion.div>
-                      ))}
-                    </motion.div>
-                  </ScrollArea>
+                      </ScrollArea>
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </motion.div>

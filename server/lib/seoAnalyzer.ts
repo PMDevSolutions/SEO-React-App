@@ -490,7 +490,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     }
   }
 
-  // Determine if the check passes (80% or more resources minified)
+  // Determine if the check passes (40% or more resources minified)
   const minificationPasses = minificationPercentage >= 40;
 
   await addCheck(
