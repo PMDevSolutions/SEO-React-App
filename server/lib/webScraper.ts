@@ -17,6 +17,10 @@ interface ScrapedData {
     imageWidth: string;
     imageHeight: string;
   };
+  resources: {
+    js: Array<{ url: string; content?: string; minified?: boolean }>;
+    css: Array<{ url: string; content?: string; minified?: boolean }>;
+  };
 }
 
 export async function scrapeWebpage(url: string): Promise<ScrapedData> {
@@ -116,6 +120,60 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       }
     });
 
+    // Extract JavaScript and CSS resources
+    const jsResources: Array<{ url: string; content?: string; minified?: boolean }> = [];
+    const cssResources: Array<{ url: string; content?: string; minified?: boolean }> = [];
+
+    // Collect script sources
+    $("script[src]").each((_: any, el: any) => {
+      const src = $(el).attr("src");
+      if (src) {
+        try {
+          const fullUrl = new URL(src, baseUrl.origin).toString();
+          jsResources.push({ url: fullUrl });
+        } catch (error) {
+          // Invalid URL, skip
+        }
+      }
+    });
+
+    // Collect stylesheet links
+    $("link[rel='stylesheet']").each((_: any, el: any) => {
+      const href = $(el).attr("href");
+      if (href) {
+        try {
+          const fullUrl = new URL(href, baseUrl.origin).toString();
+          cssResources.push({ url: fullUrl });
+        } catch (error) {
+          // Invalid URL, skip
+        }
+      }
+    });
+
+    // Also look for inline styles
+    $("style").each((_: any, el: any) => {
+      const content = $(el).html();
+      if (content && content.trim()) {
+        cssResources.push({ 
+          url: 'inline-style',
+          content: content.trim(),
+          minified: isMinified(content.trim())
+        });
+      }
+    });
+
+    // Look for inline scripts
+    $("script:not([src])").each((_: any, el: any) => {
+      const content = $(el).html();
+      if (content && content.trim()) {
+        jsResources.push({ 
+          url: 'inline-script',
+          content: content.trim(),
+          minified: isMinified(content.trim())
+        });
+      }
+    });
+
     return {
       title,
       metaDescription,
@@ -127,8 +185,33 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       internalLinks,
       outboundLinks,
       ogMetadata,
+      resources: {
+        js: jsResources,
+        css: cssResources
+      }
     };
   } catch (error: any) {
     throw new Error(`Failed to scrape webpage: ${error.message}`);
   }
+}
+
+// Helper function to determine if a code snippet is minified
+function isMinified(code: string): boolean {
+  if (!code || code.length < 50) return true; // Too short to analyze
+
+  // Check for multiple newlines (non-minified code typically has many)
+  const newlineRatio = (code.match(/\n/g) || []).length / code.length;
+
+  // Check for excessive whitespace
+  const whitespaceRatio = (code.match(/\s/g) || []).length / code.length;
+
+  // Check for long lines (minified code typically has very long lines)
+  const lines = code.split('\n').filter(line => line.trim().length > 0);
+  let avgLineLength = 0;
+  if (lines.length > 0) {
+    avgLineLength = code.length / lines.length;
+  }
+
+  // Content with very few newlines, low whitespace ratio and long average line lengths is likely minified
+  return (newlineRatio < 0.01 && whitespaceRatio < 0.15) || avgLineLength > 500;
 }

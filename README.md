@@ -82,6 +82,11 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Ensures single H1 tag usage per page
     - Checks for logical heading progression
 
+16. **Code Minification**
+    - Analyzes JavaScript and CSS resource minification
+    - Checks inline scripts and styles for optimization
+    - Identifies non-minified resources for performance improvement
+
 ## SEO Priority System
 
 Our platform uses a priority system to help you focus on the most impactful SEO improvements:
@@ -100,6 +105,7 @@ Our platform uses a priority system to help you focus on the most impactful SEO 
   - H2 headings keyword usage
   - Internal links
   - Open Graph metadata
+  - Code minification
 
 - **Low Priority** 🔵 - Minor issues that provide incremental SEO improvements
   - Image alt attributes

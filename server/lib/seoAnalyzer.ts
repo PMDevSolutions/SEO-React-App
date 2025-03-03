@@ -62,7 +62,8 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "OG Title and Description": "medium",
   "Keyphrase in H1 Heading": "high",
   "Keyphrase in H2 Headings": "medium",
-  "Heading Hierarchy": "high"
+  "Heading Hierarchy": "high",
+  "Code Minification": "medium" // Add this new check
 };
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
@@ -88,7 +89,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "OG Title and Description": "Perfect! Open Graph title and description are well configured.",
     "Keyphrase in H1 Heading": "Excellent! Your main H1 heading effectively includes the keyphrase.",
     "Keyphrase in H2 Headings": "Great job! Your H2 subheadings include the keyphrase, reinforcing your topic focus.",
-    "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy."
+    "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy.",
+    "Code Minification": "Excellent! Your JavaScript and CSS files are properly minified for better performance."
   };
 
   // Helper function to add check results
@@ -446,6 +448,70 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     hasProperHeadingHierarchy,
     fullHierarchyContext,
     true // Use our custom recommendation
+  );
+
+  // Add code minification check
+  const jsResources = scrapedData.resources.js;
+  const cssResources = scrapedData.resources.css;
+
+  // Count resources and check minification status
+  const totalJsResources = jsResources.length;
+  const totalCssResources = cssResources.length;
+  const minifiedJsCount = jsResources.filter(r => r.minified).length;
+  const minifiedCssCount = cssResources.filter(r => r.minified).length;
+
+  // Calculate percentage of minified resources
+  const totalResources = totalJsResources + totalCssResources;
+  const minifiedResources = minifiedJsCount + minifiedCssCount;
+  const minificationPercentage = totalResources > 0
+    ? Math.round((minifiedResources / totalResources) * 100)
+    : 100; // If no resources, consider it 100% passed
+
+  // List of non-minified resources to provide in the recommendation
+  const nonMinifiedJs = jsResources
+    .filter(r => !r.minified && r.url !== 'inline-script')
+    .map(r => r.url);
+
+  const nonMinifiedCss = cssResources
+    .filter(r => !r.minified && r.url !== 'inline-style')
+    .map(r => r.url);
+
+  const hasNonMinified = nonMinifiedJs.length > 0 || nonMinifiedCss.length > 0;
+  const hasInlineNonMinified = jsResources.some(r => r.url === 'inline-script' && !r.minified) ||
+    cssResources.some(r => r.url === 'inline-style' && !r.minified);
+
+  // Create context for recommendation
+  let minificationContext = "";
+  if (totalResources === 0) {
+    minificationContext = "No JavaScript or CSS resources found on the page.";
+  } else {
+    minificationContext = `Found ${totalJsResources} JavaScript and ${totalCssResources} CSS resources. `;
+    minificationContext += `${minifiedJsCount} of ${totalJsResources} JavaScript and ${minifiedCssCount} of ${totalCssResources} CSS resources are minified. `;
+
+    if (nonMinifiedJs.length > 0) {
+      minificationContext += `\n\nNon-minified JavaScript files:\n${nonMinifiedJs.join('\n')}`;
+    }
+
+    if (nonMinifiedCss.length > 0) {
+      minificationContext += `\n\nNon-minified CSS files:\n${nonMinifiedCss.join('\n')}`;
+    }
+
+    if (hasInlineNonMinified) {
+      minificationContext += `\n\nNon-minified inline scripts or styles detected. Consider minifying them as well.`;
+    }
+  }
+
+  // Determine if the check passes (80% or more resources minified)
+  const minificationPasses = minificationPercentage >= 80;
+
+  await addCheck(
+    "Code Minification",
+    minificationPasses
+      ? `Your JavaScript and CSS resources are well optimized. ${minificationPercentage}% are minified.`
+      : `${minificationPercentage}% of your JavaScript and CSS resources are minified. Aim for at least 80% minification.`,
+    minificationPasses,
+    minificationContext,
+    true // Skip GPT recommendation for this technical check
   );
 
   return {
