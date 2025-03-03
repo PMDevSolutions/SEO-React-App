@@ -331,13 +331,34 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   const h2Tags = scrapedData.headings.filter(heading => heading.level === 2);
 
   // Check for keyphrase in H1 headings (separate check)
-  const h1HasKeyphrase = h1Tags.some(heading =>
+  // First check for exact inclusion
+  let h1HasKeyphrase = h1Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
+  
+  // If not found, check for all important words
+  if (!h1HasKeyphrase && h1Tags.length > 0) {
+    console.log("H1 exact match failed, trying word-by-word matching...");
+    const keyphraseWords = keyphrase.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    
+    if (keyphraseWords.length > 0) {
+      // Check if all important words appear in the H1
+      const allWordsFound = keyphraseWords.every(word => 
+        h1Tags.some(heading => heading.text.toLowerCase().includes(word))
+      );
+      
+      // Consider it a pass if all important words are found
+      h1HasKeyphrase = allWordsFound;
+      
+      console.log("H1 tags:", h1Tags.map(h => h.text));
+      console.log("Keyphrase words:", keyphraseWords);
+      console.log("All words found in H1:", allWordsFound);
+    }
+  }
 
-  // Create context for H1 keyphrase check
+  // Create detailed context for H1 keyphrase check
   const h1Context = h1Tags.length > 0
-    ? `H1 heading ${h1HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}: ${h1Tags.map(h => `"${h.text}"`).join(', ')}`
+    ? `H1 heading ${h1HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}: ${h1Tags.map(h => `"${h.text}"`).join(', ')}\nTarget keyphrase: "${keyphrase}"`
     : 'No H1 headings found on page';
 
   // Add H1 keyphrase check
