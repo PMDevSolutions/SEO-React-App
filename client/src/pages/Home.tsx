@@ -8,14 +8,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Loader2, 
-  CheckCircle, 
-  XCircle, 
-  Copy, 
-  AlertTriangle, 
-  CircleAlert, 
-  Info 
+import {
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Copy,
+  AlertTriangle,
+  CircleAlert,
+  Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -50,7 +50,7 @@ const item = {
 
 const iconAnimation = {
   initial: { scale: 0 },
-  animate: { 
+  animate: {
     scale: 1,
     transition: {
       type: "spring",
@@ -61,13 +61,12 @@ const iconAnimation = {
 };
 
 const shouldShowCopyButton = (checkTitle: string) => {
-  return !checkTitle.toLowerCase().includes("density") && 
+  return !checkTitle.toLowerCase().includes("density") &&
          !checkTitle.toLowerCase().includes("image format") &&
          !checkTitle.toLowerCase().includes("content length") &&
          !checkTitle.toLowerCase().includes("og image") &&
-         !checkTitle.toLowerCase().includes("heading hierarchy") &&
-         !checkTitle.toLowerCase().includes("h1 heading") &&
-         !checkTitle.toLowerCase().includes("h2 headings");
+         !checkTitle.toLowerCase().includes("heading hierarchy");
+  // Removed the h1 heading and h2 headings exclusions to allow copy buttons
 };
 
 // Get priority icon based on priority level
@@ -169,13 +168,13 @@ export default function Home() {
                       <FormItem className="w-full">
                         <FormLabel>URL to analyze</FormLabel>
                         <FormControl>
-                          <motion.div 
-                            whileHover={{ scale: 1.01 }} 
+                          <motion.div
+                            whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                             className="w-full"
                           >
-                            <Input 
-                              placeholder="https://example.com" 
+                            <Input
+                              placeholder="https://example.com"
                               {...field}
                               className="w-full"
                             />
@@ -191,13 +190,13 @@ export default function Home() {
                       <FormItem className="w-full">
                         <FormLabel>Target keyphrase</FormLabel>
                         <FormControl>
-                          <motion.div 
-                            whileHover={{ scale: 1.01 }} 
+                          <motion.div
+                            whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                             className="w-full"
                           >
-                            <Input 
-                              placeholder="Enter your target keyphrase" 
+                            <Input
+                              placeholder="Enter your target keyphrase"
                               {...field}
                               className="w-full"
                             />
@@ -206,8 +205,8 @@ export default function Home() {
                       </FormItem>
                     )}
                   />
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }} 
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full pt-2"
                   >
@@ -308,8 +307,8 @@ export default function Home() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <motion.div 
-                                      whileHover={{ scale: 1.1 }} 
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
                                       className="ml-4"
                                     >
