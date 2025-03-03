@@ -126,9 +126,30 @@ export default function Home() {
   const copyToClipboard = (text: string | undefined) => {
     if (!text) return;
 
-    const match = text.match(/Here is a better [^:]+:\s*(.*)/);
-    const recommendationText = match ? match[1].trim() : text;
-    const cleanText = recommendationText.replace(/^"|"$/g, '');
+    // Extract just the text of the suggestion, not the explanation
+    let cleanText = "";
+
+    // Try to extract the specific text suggestion from various formats
+    if (text.includes("Here is a better")) {
+      // Format: "Here is a better [element]: [example]"
+      const match = text.match(/Here is a better [^:]+:\s*(.*)/);
+      cleanText = match ? match[1].trim() : text;
+    } else if (text.includes("Utilize") && text.includes("as an H")) {
+      // Format: "Utilize 'Example text' as an H1/H2 heading..."
+      const match = text.match(/Utilize ['"]([^'"]+)['"]/);
+      cleanText = match ? match[1].trim() : text;
+    } else if (text.includes("Add an H")) {
+      // Format: "Add an H1/H2 with 'Example text'..."
+      const match = text.match(/with ['"]([^'"]+)['"]/);
+      cleanText = match ? match[1].trim() : text;
+    } else {
+      // Default extraction of text inside quotes
+      const quotedText = text.match(/['"]([^'"]+)['"]/);
+      cleanText = quotedText ? quotedText[1].trim() : text;
+    }
+
+    // Clean up any remaining quotes
+    cleanText = cleanText.replace(/^"|"$/g, '');
 
     navigator.clipboard.writeText(cleanText);
     toast({
