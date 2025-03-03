@@ -502,13 +502,13 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   }
 
   // Determine if the check passes (80% or more resources minified)
-  const minificationPasses = minificationPercentage >= 80;
+  const minificationPasses = minificationPercentage >= 40;
 
   await addCheck(
     "Code Minification",
     minificationPasses
       ? `Your JavaScript and CSS resources are well optimized. ${minificationPercentage}% are minified.`
-      : `${minificationPercentage}% of your JavaScript and CSS resources are minified. Aim for at least 80% minification.`,
+      : `${minificationPercentage}% of your JavaScript and CSS resources are minified. Aim for at least 40% minification.`,
     minificationPasses,
     minificationContext,
     true // Skip GPT recommendation for this technical check
