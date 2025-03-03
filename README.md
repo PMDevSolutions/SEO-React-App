@@ -67,12 +67,17 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Verifies OG title and description presence
     - Checks metadata length optimization
 
-13. **H1/H2 Keyword Usage**
-    - Verifies keyphrase presence in H1 and H2 headings
-    - Ensures primary heading contains the target keyword
-    - Analyzes keyword placement in headings
+13. **H1 Heading Keyword Usage**
+    - Verifies keyphrase presence in the main H1 heading
+    - Ensures the primary heading contains the target keyword
+    - Checks for presence of a single H1 tag
 
-14. **Heading Hierarchy**
+14. **H2 Headings Keyword Usage**
+    - Analyzes subheadings for keyphrase inclusion
+    - Ensures at least one H2 heading contains the target keyword
+    - Reinforces topic focus through subheadings
+
+15. **Heading Hierarchy**
     - Validates proper heading structure (H1 → H2 → H3)
     - Ensures single H1 tag usage per page
     - Checks for logical heading progression
@@ -85,14 +90,14 @@ Our platform uses a priority system to help you focus on the most impactful SEO 
   - Title tag optimization
   - Meta description analysis
   - Content length
-  - H1/H2 keyword usage
+  - H1 heading keyword usage
   - Heading hierarchy
 
 - **Medium Priority** 🟡 - Important issues that should be addressed for better SEO
   - URL structure
   - Keyphrase density
   - Introduction optimization
-  - Subheading structure
+  - H2 headings keyword usage
   - Internal links
   - Open Graph metadata
 

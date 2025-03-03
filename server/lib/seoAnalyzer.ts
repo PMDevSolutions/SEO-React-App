@@ -60,7 +60,8 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Next-Gen Image Formats": "low",
   "OG Image": "medium",
   "OG Title and Description": "medium",
-  "H1/H2 Keyword Usage": "high",
+  "Keyphrase in H1 Heading": "high",
+  "Keyphrase in H2 Headings": "medium",
   "Heading Hierarchy": "high"
 };
 
@@ -85,7 +86,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Next-Gen Image Formats": "Excellent! Your images use modern, optimized formats.",
     "OG Image": "Great job! Your page has a properly configured Open Graph image.",
     "OG Title and Description": "Perfect! Open Graph title and description are well configured.",
-    "H1/H2 Keyword Usage": "Excellent! Your H1 and H2 headings effectively include the keyphrase.",
+    "Keyphrase in H1 Heading": "Excellent! Your main H1 heading effectively includes the keyphrase.",
+    "Keyphrase in H2 Headings": "Great job! Your H2 subheadings include the keyphrase, reinforcing your topic focus.",
     "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy."
   };
 
@@ -337,35 +339,48 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   const h1Tags = scrapedData.headings.filter(heading => heading.level === 1);
   const h2Tags = scrapedData.headings.filter(heading => heading.level === 2);
 
+  // Check for keyphrase in H1 headings (separate check)
   const h1HasKeyphrase = h1Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
 
+  // Create context for H1 keyphrase check
+  const h1Context = h1Tags.length > 0
+    ? `H1 heading ${h1HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}: ${h1Tags.map(h => `"${h.text}"`).join(', ')}`
+    : 'No H1 headings found on page';
+
+  // Add H1 keyphrase check
+  await addCheck(
+    "Keyphrase in H1 Heading",
+    h1Tags.length === 0
+      ? "Your page is missing an H1 heading. Add an H1 heading that includes your keyphrase."
+      : h1Tags.length > 1
+        ? "You have multiple H1 headings. Best practice is to have a single H1 heading that includes your keyphrase."
+        : "Your H1 heading should include your target keyphrase for optimal SEO.",
+    h1HasKeyphrase && h1Tags.length === 1,
+    `${h1Context}\nTarget keyphrase: "${keyphrase}"`
+  );
+
+  // Check for keyphrase in H2 headings (separate check)
   const h2HasKeyphrase = h2Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
 
-  const keyphraseInH1H2 = h1HasKeyphrase || h2HasKeyphrase;
-
-  // Create a detailed context of the current heading structure with keyphrase status
-  const h1Context = h1Tags.length > 0
-    ? `H1 headings (${h1HasKeyphrase ? 'contains keyphrase' : 'missing keyphrase'}): ${h1Tags.map(h => `"${h.text}"`).join(', ')}`
-    : 'No H1 headings found on page';
-
+  // Create context for H2 keyphrase check
   const h2Context = h2Tags.length > 0
-    ? `H2 headings (${h2HasKeyphrase ? 'contains keyphrase' : 'missing keyphrase'}): ${h2Tags.map(h => `"${h.text}"`).join(', ')}`
+    ? `H2 headings ${h2HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}: ${h2Tags.map(h => `"${h.text}"`).join(', ')}`
     : 'No H2 headings found on page';
 
-  const headingKeywordContext = `${h1Context}\n${h2Context}\nTarget keyphrase: "${keyphrase}"`;
-
+  // Add H2 keyphrase check
   await addCheck(
-    "H1/H2 Keyword Usage",
-    keyphraseInH1H2
-      ? `Great! ${h1HasKeyphrase ? 'H1' : 'H2'} headings include your keyphrase.`
-      : "Your primary headings (H1/H2) should include the target keyphrase for better SEO.",
-    keyphraseInH1H2,
-    headingKeywordContext
+    "Keyphrase in H2 Headings",
+    h2Tags.length === 0
+      ? "Your page doesn't have any H2 headings. Add H2 subheadings that include your keyphrase to structure your content."
+      : "Your H2 headings should include your target keyphrase at least once to reinforce your topic focus.",
+    h2HasKeyphrase && h2Tags.length > 0,
+    `${h2Context}\nTarget keyphrase: "${keyphrase}"`
   );
+
 
   // Add heading hierarchy check
   // Check for proper heading hierarchy
