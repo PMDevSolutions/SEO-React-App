@@ -17,6 +17,11 @@
     "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./client/src/*"]
-    }
+    },
+    "outDir": "dist",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@webflow"
+    ]
   }
 }
