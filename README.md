@@ -87,6 +87,12 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Checks inline scripts and styles for optimization
     - Identifies non-minified resources for performance improvement
 
+17. **Schema Markup Analysis**
+    - Detects presence of structured data (JSON-LD and Microdata)
+    - Identifies implemented schema types
+    - Recommends appropriate schema markup based on page content
+    - Provides guidance on implementing structured data
+
 ## SEO Priority System
 
 Our platform uses a priority system to help you focus on the most impactful SEO improvements:
@@ -106,6 +112,7 @@ Our platform uses a priority system to help you focus on the most impactful SEO 
   - Internal links
   - Open Graph metadata
   - Code minification
+  - Schema markup
 
 - **Low Priority** 🔵 - Minor issues that provide incremental SEO improvements
   - Image alt attributes

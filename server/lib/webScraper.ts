@@ -21,6 +21,12 @@ interface ScrapedData {
     js: Array<{ url: string; content?: string; minified?: boolean }>;
     css: Array<{ url: string; content?: string; minified?: boolean }>;
   };
+  schema: {
+    detected: boolean;
+    types: string[];
+    jsonLdBlocks: any[];
+    microdataTypes: string[];
+  };
 }
 
 export async function scrapeWebpage(url: string): Promise<ScrapedData> {
@@ -174,6 +180,57 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       }
     });
 
+    // Extract schema markup
+    // 1. Look for JSON-LD
+    const jsonLdBlocks: any[] = [];
+    $('script[type="application/ld+json"]').each((_: any, el: any) => {
+      try {
+        const jsonContent = $(el).html();
+        if (jsonContent) {
+          const parsed = JSON.parse(jsonContent);
+          jsonLdBlocks.push(parsed);
+        }
+      } catch (error) {
+        console.log("Error parsing JSON-LD:", error);
+      }
+    });
+
+    // 2. Look for Microdata
+    const microdataTypes: string[] = [];
+    $('[itemscope]').each((_: any, el: any) => {
+      const itemtype = $(el).attr('itemtype');
+      if (itemtype) {
+        try {
+          // Extract the schema type from the URL (e.g., http://schema.org/Product -> Product)
+          const match = itemtype.match(/schema\.org\/([a-zA-Z]+)/);
+          if (match && match[1]) {
+            microdataTypes.push(match[1]);
+          } else {
+            microdataTypes.push(itemtype);
+          }
+        } catch (error) {
+          console.log("Error extracting microdata type:", error);
+        }
+      }
+    });
+
+    // Combine all schema types
+    const schemaTypes = new Set<string>();
+
+    // Add types from JSON-LD
+    jsonLdBlocks.forEach(block => {
+      if (block['@type']) {
+        if (Array.isArray(block['@type'])) {
+          block['@type'].forEach((type: string) => schemaTypes.add(type));
+        } else {
+          schemaTypes.add(block['@type']);
+        }
+      }
+    });
+
+    // Add types from Microdata
+    microdataTypes.forEach(type => schemaTypes.add(type));
+
     return {
       title,
       metaDescription,
@@ -188,6 +245,12 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       resources: {
         js: jsResources,
         css: cssResources
+      },
+      schema: {
+        detected: jsonLdBlocks.length > 0 || microdataTypes.length > 0,
+        types: Array.from(schemaTypes),
+        jsonLdBlocks,
+        microdataTypes
       }
     };
   } catch (error: any) {

@@ -62,7 +62,8 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Keyphrase in H1 Heading": "high",
   "Keyphrase in H2 Headings": "medium",
   "Heading Hierarchy": "high",
-  "Code Minification": "low"
+  "Code Minification": "low",
+  "Schema Markup": "medium" // Added new check with medium priority
 };
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
@@ -88,7 +89,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Keyphrase in H1 Heading": "Excellent! Your main H1 heading effectively includes the keyphrase.",
     "Keyphrase in H2 Headings": "Great job! Your H2 subheadings include the keyphrase, reinforcing your topic focus.",
     "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy.",
-    "Code Minification": "Excellent! Your JavaScript and CSS files are properly minified for better performance."
+    "Code Minification": "Excellent! Your JavaScript and CSS files are properly minified for better performance.",
+    "Schema Markup": "Great job! Your page has schema markup implemented, making it easier for search engines to understand your content."
   };
 
   // Helper function to add check results
@@ -335,21 +337,21 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   let h1HasKeyphrase = h1Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
-  
+
   // If not found, check for all important words
   if (!h1HasKeyphrase && h1Tags.length > 0) {
     console.log("H1 exact match failed, trying word-by-word matching...");
     const keyphraseWords = keyphrase.toLowerCase().split(/\s+/).filter(word => word.length > 2);
-    
+
     if (keyphraseWords.length > 0) {
       // Check if all important words appear in the H1
       const allWordsFound = keyphraseWords.every(word => 
         h1Tags.some(heading => heading.text.toLowerCase().includes(word))
       );
-      
+
       // Consider it a pass if all important words are found
       h1HasKeyphrase = allWordsFound;
-      
+
       console.log("H1 tags:", h1Tags.map(h => h.text));
       console.log("Keyphrase words:", keyphraseWords);
       console.log("All words found in H1:", allWordsFound);
@@ -377,27 +379,27 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   let h2HasKeyphrase = h2Tags.some(heading =>
     heading.text.toLowerCase().includes(keyphrase.toLowerCase())
   );
-  
+
   // If exact match fails, try checking for individual keywords
   if (!h2HasKeyphrase && h2Tags.length > 0) {
     console.log("H2 exact match failed, trying word-by-word matching...");
     const keyphraseWords = keyphrase.toLowerCase().split(/\s+/).filter(word => word.length > 2);
-    
+
     if (keyphraseWords.length > 0) {
       // Consider it a match if at least one H2 contains all important words from keyphrase
       const allWordsFoundInAnyH2 = h2Tags.some(heading => {
         const headingText = heading.text.toLowerCase();
         return keyphraseWords.every(word => headingText.includes(word));
       });
-      
+
       // Or if all important words appear across multiple H2s
       const allWordsFoundAcrossH2s = keyphraseWords.every(word => 
         h2Tags.some(heading => heading.text.toLowerCase().includes(word))
       );
-      
+
       // Consider it a pass if either condition is met
       h2HasKeyphrase = allWordsFoundInAnyH2 || allWordsFoundAcrossH2s;
-      
+
       console.log("H2 tags:", h2Tags.map(h => h.text));
       console.log("Keyphrase words:", keyphraseWords);
       console.log("All words found in any H2:", allWordsFoundInAnyH2);
@@ -415,7 +417,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       h2Context += `${i+1}. "${h.text}"\n`;
     });
     h2Context += `\nTarget keyphrase: "${keyphrase}"\n`;
-    
+
     // Add suggestions if keyphrase is missing
     if (!h2HasKeyphrase) {
       h2Context += '\nConsider updating at least one H2 to include your target keyphrase.';
@@ -561,6 +563,39 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     minificationPasses,
     minificationContext,
     true // Skip GPT recommendation for this technical check
+  );
+
+  // Add schema markup check
+  const hasSchemaMarkup = scrapedData.schema.detected;
+  const schemaTypes = scrapedData.schema.types;
+
+  // Create context for recommendation
+  let schemaContext = "";
+  if (hasSchemaMarkup) {
+    schemaContext = `Schema markup found on page. Types detected: ${schemaTypes.join(', ') || 'Unknown'}`;
+  } else {
+    // Create detailed context to help GPT generate a relevant recommendation
+    schemaContext = `
+No schema markup detected on page.
+Page title: ${scrapedData.title}
+Meta description: ${scrapedData.metaDescription}
+URL: ${url}
+Content type indicators:
+- First H1: ${h1Tags.length > 0 ? h1Tags[0].text : 'None'}
+- First few H2s: ${h2Tags.slice(0, 3).map(h => h.text).join(', ')}
+- Has images: ${scrapedData.images.length > 0 ? 'Yes' : 'No'}
+- Is homepage: ${isHomePage(url) ? 'Yes' : 'No'}
+- Content preview: ${scrapedData.paragraphs.slice(0, 2).join(' ').substring(0, 200)}...
+`;
+  }
+
+  await addCheck(
+    "Schema Markup",
+    hasSchemaMarkup ? 
+      `Your page has schema markup implemented (${schemaTypes.join(', ') || 'Unknown'})` :
+      "Your page is missing schema markup (structured data)",
+    hasSchemaMarkup,
+    schemaContext
   );
 
   return {

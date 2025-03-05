@@ -107,7 +107,7 @@ const groupChecksByCategory = (checks: SEOCheck[]) => {
     "Content": ["Keyphrase in H1 Heading", "Keyphrase in H2 Headings", "Heading Hierarchy", "Content Length", "Keyphrase Density", "Keyphrase in Introduction"],
     "Links": ["Internal Links", "Outbound Links"],
     "Images": ["Image Alt Attributes", "Next-Gen Image Formats", "OG Image"],
-    "Technical": ["Code Minification"]
+    "Technical": ["Code Minification", "Schema Markup"]
   };
 
   const grouped: Record<string, SEOCheck[]> = {};
