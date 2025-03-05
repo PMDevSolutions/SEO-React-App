@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: "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" });
+const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_API_KEY });
 
 export async function getGPTRecommendation(
   checkType: string,
