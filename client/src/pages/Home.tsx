@@ -68,7 +68,8 @@ const shouldShowCopyButton = (checkTitle: string) => {
          !checkTitle.toLowerCase().includes("content length") &&
          !checkTitle.toLowerCase().includes("og image") &&
          !checkTitle.toLowerCase().includes("heading hierarchy") &&
-         !checkTitle.toLowerCase().includes("code minification");
+         !checkTitle.toLowerCase().includes("code minification") &&
+         !checkTitle.toLowerCase().includes("schema markup");
   // Removed the h1 heading and h2 headings exclusions to allow copy buttons
 };
 

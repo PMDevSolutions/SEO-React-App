@@ -667,46 +667,41 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
     scrapedData.content.toLowerCase().includes('our team') ||
     scrapedData.content.toLowerCase().includes('company');
 
-  // Create recommendation based on page indicators
+  // Create recommendation based on page indicators - simplified version without JSON examples
   let recommendation = "Your page is missing schema markup (structured data). Adding schema markup helps search engines understand your content better and can enhance your search appearance.\n\n";
 
   recommendation += "Based on your page content, consider implementing these schema types:\n\n";
 
   if (isHome) {
-    recommendation += "1. **Organization or WebSite Schema** - For your homepage, this provides essential information about your organization and website.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"[Your Organization Name]\",\n  \"url\": \"" + url + "\",\n  \"logo\": \"[Your Logo URL]\",\n  \"contactPoint\": {\n    \"@type\": \"ContactPoint\",\n    \"telephone\": \"[Your Phone Number]\",\n    \"contactType\": \"customer service\"\n  }\n}\n</script>\n```\n\n";
+    recommendation += "1. **Organization or WebSite Schema** - For your homepage, this provides essential information about your organization and website.\n\n";
   }
 
   if (hasProductIndicators) {
-    recommendation += (isHome ? "2" : "1") + ". **Product Schema** - For product pages, this highlights product details in search results and may enable rich product features.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Product\",\n  \"name\": \"[Product Name]\",\n  \"description\": \"[Product Description]\",\n  \"image\": \"[Product Image URL]\",\n  \"offers\": {\n    \"@type\": \"Offer\",\n    \"price\": \"[Price]\",\n    \"priceCurrency\": \"USD\",\n    \"availability\": \"https://schema.org/InStock\"\n  }\n}\n</script>\n```\n\n";
+    const num = isHome ? 2 : 1;
+    recommendation += `${num}. **Product Schema** - For product pages, this highlights product details in search results and may enable rich product features.\n\n`;
   }
 
   if (hasArticleIndicators) {
     let count = (isHome ? 2 : 1) + (hasProductIndicators ? 1 : 0);
-    recommendation += count + ". **Article Schema** - For blog posts and articles, this helps search engines understand your content's publication details.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Article\",\n  \"headline\": \"" + scrapedData.title + "\",\n  \"description\": \"" + (scrapedData.metaDescription || "[Article Description]") + "\",\n  \"image\": \"[Featured Image URL]\",\n  \"datePublished\": \"YYYY-MM-DD\",\n  \"author\": {\n    \"@type\": \"Person\",\n    \"name\": \"[Author Name]\"\n  }\n}\n</script>\n\n```\n\n";
+    recommendation += `${count}. **Article Schema** - For blog posts and articles, this helps search engines understand your content's publication details.\n\n`;
   }
 
   if (hasFAQIndicators) {
     let count = (isHome ? 2 : 1) + (hasProductIndicators ? 1 : 0) + (hasArticleIndicators ? 1 : 0);
-    recommendation += count + ". **FAQ Schema** - For frequently asked questions sections, this can enable FAQ rich results in search.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"[Question 1]\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"[Answer 1]\"\n      }\n    },\n    {\n      \"@type\": \"Question\",\n      \"name\": \"[Question 2]\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"[Answer 2]\"\n      }\n    }\n  ]\n}\n</script>\n\n```\n\n";
+    recommendation += `${count}. **FAQ Schema** - For frequently asked questions sections, this can enable FAQ rich results in search.\n\n`;
   }
 
   if (hasOrganizationIndicators && !isHome) {
     let count = 1 + (hasProductIndicators ? 1 : 0) + (hasArticleIndicators ? 1 : 0) + (hasFAQIndicators ? 1 : 0);
-    recommendation += count + ". **Organization Schema** - For About or Contact pages, this provides essential information about your organization.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"[Your Organization Name]\",\n  \"url\": \"" + url + "\",\n  \"logo\": \"[Your Logo URL]\",\n  \"contactPoint\": {\n    \"@type\": \"ContactPoint\",\n    \"telephone\": \"[Your Phone Number]\",\n    \"contactType\": \"customer service\"\n  }\n}\n</script>\n```\n\n";
+    recommendation += `${count}. **Organization Schema** - For About or Contact pages, this provides essential information about your organization.\n\n`;
   }
 
   // Default schema if no specific type detected
   if (!isHome && !hasProductIndicators && !hasArticleIndicators && !hasFAQIndicators && !hasOrganizationIndicators) {
-    recommendation += "1. **WebPage Schema** - A general schema type suitable for most content pages.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"WebPage\",\n  \"name\": \"" + scrapedData.title + "\",\n  \"description\": \"" + (scrapedData.metaDescription || "[Page Description]") + "\"\n}\n</script>\n```\n\n";
+    recommendation += "1. **WebPage Schema** - A general schema type suitable for most content pages.\n\n";
   }
 
-  recommendation += "Add the appropriate schema markup to your HTML's <head> section. You can test your implementation using Google's [Rich Results Test](https://search.google.com/test/rich-results) or [Schema Markup Validator](https://validator.schema.org/).";
+  recommendation += "You can implement these schema types using JSON-LD format. Test your implementation using Google's [Rich Results Test](https://search.google.com/test/rich-results) or [Schema Markup Validator](https://validator.schema.org/).";
 
   return recommendation;
 }
