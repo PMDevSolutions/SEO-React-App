@@ -114,6 +114,25 @@ Our platform uses a priority system to help you focus on the most impactful SEO 
 
 Each check includes a visual priority indicator to help you prioritize your optimization efforts.
 
+## SEO Score System
+
+Our platform provides an overall SEO score (0-100) that helps you quickly assess your website's optimization level:
+
+- **Score Calculation**: Weighted based on priority levels
+  - High priority checks have the greatest impact on your score
+  - Medium priority checks have moderate impact
+  - Low priority checks have minimal impact
+
+- **Score Visualization**:
+  - Color-coded circular progress indicator (red/yellow/green)
+  - Clear rating descriptions (Poor, Needs Work, Fair, Good, Very Good, Excellent)
+  - At-a-glance performance assessment
+
+- **Category Breakdown**:
+  - Separate scores for each SEO category (Page Settings, Content, Links, Images, Technical)
+  - Quick identification of areas needing improvement
+  - Drill-down capability for detailed analysis
+
 ## Technical Features
 
 ### Frontend

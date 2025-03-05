@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { analyzeSEO } from "@/lib/api";
 import type { SEOAnalysisResult, SEOCheck } from "@/lib/types";
+import { ProgressCircle } from "@/components/ui/progress-circle";
 
 const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -154,6 +155,45 @@ const getCategoryStatusIcon = (status: string) => {
   }
 };
 
+// Calculate the overall SEO score based on check priorities
+const calculateSEOScore = (checks: SEOCheck[]): number => {
+  if (!checks || checks.length === 0) return 0;
+
+  // Define weights for different priority levels
+  const weights = {
+    high: 3,
+    medium: 2,
+    low: 1
+  };
+
+  // Calculate total possible points
+  let totalPossiblePoints = 0;
+  checks.forEach(check => {
+    totalPossiblePoints += weights[check.priority] || weights.medium;
+  });
+
+  // Calculate earned points
+  let earnedPoints = 0;
+  checks.forEach(check => {
+    if (check.passed) {
+      earnedPoints += weights[check.priority] || weights.medium;
+    }
+  });
+
+  // Calculate percentage score (0-100)
+  return Math.round((earnedPoints / totalPossiblePoints) * 100);
+};
+
+// Get score rating text
+const getScoreRatingText = (score: number): string => {
+  if (score >= 90) return "Excellent";
+  if (score >= 80) return "Very Good";
+  if (score >= 70) return "Good";
+  if (score >= 60) return "Fair";
+  if (score >= 50) return "Needs Work";
+  return "Poor";
+};
+
 export default function Home() {
   const { toast } = useToast();
   const [results, setResults] = useState<SEOAnalysisResult | null>(null);
@@ -228,6 +268,10 @@ export default function Home() {
   const selectedCategoryChecks = selectedCategory && groupedChecks 
     ? groupedChecks[selectedCategory] || [] 
     : [];
+
+  // Calculate overall SEO score
+  const seoScore = results ? calculateSEOScore(results.checks) : 0;
+  const scoreRating = getScoreRatingText(seoScore);
 
   return (
     <motion.div
@@ -340,13 +384,31 @@ export default function Home() {
                       <CardTitle className="text-center">Analysis Results</CardTitle>
                     )}
                   </div>
-                  <motion.div
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    className="text-sm text-muted-foreground text-center"
-                  >
-                    {results.passedChecks} passes ✅ • {results.failedChecks} improvements needed ❌
-                  </motion.div>
+                  {!selectedCategory && (
+                    <div className="flex flex-col items-center justify-center mt-4">
+                      <ProgressCircle 
+                        value={seoScore} 
+                        size={140} 
+                        strokeWidth={10}
+                        scoreText="SEO Score" 
+                      />
+                      <div className="mt-2 text-center">
+                        <p className="text-lg font-medium">{scoreRating}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {results.passedChecks} passed ✅ • {results.failedChecks} to improve ❌
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedCategory && (
+                    <motion.div
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      className="text-sm text-muted-foreground text-center"
+                    >
+                      {results.passedChecks} passes ✅ • {results.failedChecks} improvements needed ❌
+                    </motion.div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {selectedCategory ? (
