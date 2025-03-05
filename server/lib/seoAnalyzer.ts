@@ -578,12 +578,12 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
   // Add schema markup check
   const hasSchemaMarkup = scrapedData.schema.detected;
-  const schemaTypes = scrapedData.schema.types;
+  const schemaTypesDetected = scrapedData.schema.types;
 
   // Create context for recommendation
   let schemaContext = "";
   if (hasSchemaMarkup) {
-    schemaContext = `Schema markup found on page. Types detected: ${schemaTypes.join(', ') || 'Unknown'}`;
+    schemaContext = `Schema markup found on page. Types detected: ${schemaTypesDetected.join(', ') || 'Unknown'}`;
   } else {
     // Create detailed context to help generate a relevant recommendation
     schemaContext = `
@@ -604,8 +604,8 @@ Content type indicators:
   let schemaRecommendation = "";
   if (hasSchemaMarkup) {
     schemaRecommendation = `Your page has schema markup implemented. The following schema types were detected:\n\n`;
-    if (schemaTypes.length > 0) {
-      schemaTypes.forEach((type, index) => {
+    if (schemaTypesDetected.length > 0) {
+      schemaTypesDetected.forEach((type, index) => {
         schemaRecommendation += `${index + 1}. **${type}** - This helps search engines understand that your content represents a ${type.toLowerCase()}\n`;
       });
       schemaRecommendation += `\nYou can further optimize your schema markup by ensuring all required properties are included for each type.`;
@@ -620,7 +620,7 @@ Content type indicators:
   await addCheck(
     "Schema Markup",
     hasSchemaMarkup ?
-      `Your page has schema markup implemented (${schemaTypes.join(', ') || 'Unknown type'})` :
+      `Your page has schema markup implemented (${schemaTypesDetected.join(', ') || 'Unknown type'})` :
       "Your page is missing schema markup (structured data)",
     hasSchemaMarkup,
     schemaContext,
@@ -667,41 +667,42 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
     scrapedData.content.toLowerCase().includes('our team') ||
     scrapedData.content.toLowerCase().includes('company');
 
-  // Create recommendation based on page indicators - simplified version without JSON examples
-  let recommendation = "Your page is missing schema markup (structured data). Adding schema markup helps search engines understand your content better and can enhance your search appearance.\n\n";
-
-  recommendation += "Based on your page content, consider implementing these schema types:\n\n";
+  // Create a much more concise recommendation
+  let recommendation = "**Recommended Schema for this page:**\n\n";
+  const schemaTypes = [];
 
   if (isHome) {
-    recommendation += "1. **Organization or WebSite Schema** - For your homepage, this provides essential information about your organization and website.\n\n";
+    schemaTypes.push("Organization or WebSite Schema");
   }
 
   if (hasProductIndicators) {
-    const num = isHome ? 2 : 1;
-    recommendation += `${num}. **Product Schema** - For product pages, this highlights product details in search results and may enable rich product features.\n\n`;
+    schemaTypes.push("Product Schema");
   }
 
   if (hasArticleIndicators) {
-    let count = (isHome ? 2 : 1) + (hasProductIndicators ? 1 : 0);
-    recommendation += `${count}. **Article Schema** - For blog posts and articles, this helps search engines understand your content's publication details.\n\n`;
+    schemaTypes.push("Article Schema");
   }
 
   if (hasFAQIndicators) {
-    let count = (isHome ? 2 : 1) + (hasProductIndicators ? 1 : 0) + (hasArticleIndicators ? 1 : 0);
-    recommendation += `${count}. **FAQ Schema** - For frequently asked questions sections, this can enable FAQ rich results in search.\n\n`;
+    schemaTypes.push("FAQ Schema");
   }
 
   if (hasOrganizationIndicators && !isHome) {
-    let count = 1 + (hasProductIndicators ? 1 : 0) + (hasArticleIndicators ? 1 : 0) + (hasFAQIndicators ? 1 : 0);
-    recommendation += `${count}. **Organization Schema** - For About or Contact pages, this provides essential information about your organization.\n\n`;
+    schemaTypes.push("Organization Schema");
   }
 
   // Default schema if no specific type detected
-  if (!isHome && !hasProductIndicators && !hasArticleIndicators && !hasFAQIndicators && !hasOrganizationIndicators) {
-    recommendation += "1. **WebPage Schema** - A general schema type suitable for most content pages.\n\n";
+  if (!isHome && schemaTypes.length === 0) {
+    schemaTypes.push("WebPage Schema");
   }
 
-  recommendation += "You can implement these schema types using JSON-LD format. Test your implementation using Google's [Rich Results Test](https://search.google.com/test/rich-results) or [Schema Markup Validator](https://validator.schema.org/).";
+  // Add each schema type as a bullet point
+  schemaTypes.forEach(type => {
+    recommendation += `• ${type}\n`;
+  });
+
+  // Add a short note about testing
+  recommendation += "\nTip: Test implementations with Google's Rich Results Test tool.";
 
   return recommendation;
 }
