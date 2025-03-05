@@ -356,7 +356,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
 
     if (keyphraseWords.length > 0) {
       // Check if all important words appear in the H1
-      const allWordsFound = keyphraseWords.every(word => 
+      const allWordsFound = keyphraseWords.every(word =>
         h1Tags.some(heading => heading.text.toLowerCase().includes(word))
       );
 
@@ -404,7 +404,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
       });
 
       // Or if all important words appear across multiple H2s
-      const allWordsFoundAcrossH2s = keyphraseWords.every(word => 
+      const allWordsFoundAcrossH2s = keyphraseWords.every(word =>
         h2Tags.some(heading => heading.text.toLowerCase().includes(word))
       );
 
@@ -600,15 +600,39 @@ Content type indicators:
 `;
   }
 
+  // For schema markup, always use our custom recommendation instead of GPT
+  let schemaRecommendation = "";
+  if (hasSchemaMarkup) {
+    schemaRecommendation = `Your page has schema markup implemented. The following schema types were detected:\n\n`;
+    if (schemaTypes.length > 0) {
+      schemaTypes.forEach((type, index) => {
+        schemaRecommendation += `${index + 1}. **${type}** - This helps search engines understand that your content represents a ${type.toLowerCase()}\n`;
+      });
+      schemaRecommendation += `\nYou can further optimize your schema markup by ensuring all required properties are included for each type.`;
+    } else {
+      schemaRecommendation += `Schema markup was detected but the specific type couldn't be determined. Consider using more specific schema types from schema.org.`;
+    }
+  } else {
+    // Use our custom recommendation generator instead of GPT
+    schemaRecommendation = generateSchemaMarkupRecommendation(scrapedData, url);
+  }
+
   await addCheck(
     "Schema Markup",
-    hasSchemaMarkup ? 
-      `Your page has schema markup implemented (${schemaTypes.join(', ') || 'Unknown'})` :
+    hasSchemaMarkup ?
+      `Your page has schema markup implemented (${schemaTypes.join(', ') || 'Unknown type'})` :
       "Your page is missing schema markup (structured data)",
     hasSchemaMarkup,
     schemaContext,
-    hasSchemaMarkup // Skip GPT recommendation if schema is already present
+    true // Skip GPT recommendation as we're using our custom one
   );
+
+  // Since we're skipping GPT recommendation by setting skipRecommendation=true,
+  // we need to manually assign our custom recommendation
+  const schemaCheck = checks.find(check => check.title === "Schema Markup");
+  if (schemaCheck) {
+    schemaCheck.recommendation = schemaRecommendation;
+  }
 
   return {
     checks,
@@ -623,14 +647,14 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
   const isHome = isHomePage(url);
 
   // Extract key data points for determining page type
-  const hasProductIndicators = scrapedData.title.toLowerCase().includes('product') || 
-    scrapedData.content.toLowerCase().includes('price') || 
+  const hasProductIndicators = scrapedData.title.toLowerCase().includes('product') ||
+    scrapedData.content.toLowerCase().includes('price') ||
     scrapedData.content.toLowerCase().includes('buy now') ||
     scrapedData.content.toLowerCase().includes('add to cart');
 
-  const hasArticleIndicators = scrapedData.paragraphs.length > 3 || 
+  const hasArticleIndicators = scrapedData.paragraphs.length > 3 ||
     scrapedData.content.split(/\s+/).length > 500 ||
-    scrapedData.title.toLowerCase().includes('article') || 
+    scrapedData.title.toLowerCase().includes('article') ||
     scrapedData.title.toLowerCase().includes('blog') ||
     scrapedData.title.toLowerCase().includes('news');
 
@@ -638,7 +662,7 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
     scrapedData.content.toLowerCase().includes('frequently asked') ||
     (scrapedData.headings.filter(h => h.text.toLowerCase().includes('faq') || h.text.toLowerCase().includes('question')).length > 0);
 
-  const hasOrganizationIndicators = scrapedData.content.toLowerCase().includes('about us') || 
+  const hasOrganizationIndicators = scrapedData.content.toLowerCase().includes('about us') ||
     scrapedData.content.toLowerCase().includes('contact us') ||
     scrapedData.content.toLowerCase().includes('our team') ||
     scrapedData.content.toLowerCase().includes('company');
@@ -661,7 +685,7 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
   if (hasArticleIndicators) {
     let count = (isHome ? 2 : 1) + (hasProductIndicators ? 1 : 0);
     recommendation += count + ". **Article Schema** - For blog posts and articles, this helps search engines understand your content's publication details.\n";
-    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Article\",\n  \"headline\": \"" + scrapedData.title + "\",\n  \"description\": \"" + (scrapedData.metaDescription || "[Article Description]") + "\",\n  \"image\": \"[Featured Image URL]\",\n  \"datePublished\": \"YYYY-MM-DD\",\n  \"author\": {\n    \"@type\": \"Person\",\n    \"name\": \"[Author Name]\"\n  }\n}\n</script>\n```\n\n";
+    recommendation += "```json\n<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Article\",\n  \"headline\": \"" + scrapedData.title + "\",\n  \"description\": \"" + (scrapedData.metaDescription || "[Article Description]") + "\",\n  \"image\": \"[Featured Image URL]\",\n  \"datePublished\": \"YYYY-MM-DD\",\n  \"author\": {\n    \"@type\": \"Person\",\n    \"name\": \"[Author Name]\"\n  }\n}\n</script>\n\n```\n\n";
   }
 
   if (hasFAQIndicators) {
