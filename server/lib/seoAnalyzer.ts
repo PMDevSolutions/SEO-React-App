@@ -6,6 +6,18 @@ interface SuccessMessages {
   [key: string]: string;
 }
 
+// Checks that can use GPT recommendations (can be controlled via environment variable)
+// Empty array means no GPT recommendations for any checks
+const enabledGPTChecks = process.env.ENABLED_GPT_CHECKS ? 
+  process.env.ENABLED_GPT_CHECKS.split(',') : 
+  [
+    "Keyphrase in Title",
+    "Keyphrase in Meta Description", 
+    "Keyphrase in Introduction",
+    "Keyphrase in H1 Heading",
+    "Keyphrase in H2 Headings"
+  ];
+
 // Helper function to calculate keyphrase density
 function calculateKeyphraseDensity(content: string, keyphrase: string): {
   density: number;
@@ -66,6 +78,33 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Schema Markup": "medium" // Added new check with medium priority
 };
 
+// Custom recommendation templates for non-GPT fallbacks
+const fallbackRecommendations: Record<string, (params: any) => string> = {
+  "Keyphrase in Title": ({ keyphrase, title }) => 
+    `Consider rewriting your title to include '${keyphrase}', preferably at the beginning.`,
+
+  "Keyphrase in Meta Description": ({ keyphrase }) =>
+    `Add '${keyphrase}' to your meta description in a natural way that encourages clicks.`,
+
+  "Keyphrase in Introduction": ({ keyphrase }) =>
+    `Mention '${keyphrase}' in your first paragraph to establish relevance early.`,
+
+  "Keyphrase in H1 Heading": ({ keyphrase }) =>
+    `Include '${keyphrase}' in your main H1 heading to improve SEO.`,
+
+  "Keyphrase in H2 Headings": ({ keyphrase }) =>
+    `Use '${keyphrase}' in at least one H2 subheading to reinforce topic relevance.`,
+
+  "Image Alt Attributes": ({ keyphrase }) =>
+    `Add descriptive alt text containing '${keyphrase}' to at least one relevant image.`,
+
+  "Internal Links": () =>
+    `Add links to other relevant pages on your site to improve navigation and SEO.`,
+
+  "Outbound Links": () =>
+    `Link to reputable external sources to increase your content's credibility.`
+};
+
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
   const checks: SEOCheck[] = [];
@@ -108,16 +147,32 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     } else {
       failedChecks++;
       if (!skipRecommendation) {
-        try {
-          recommendation = await getGPTRecommendation(title, keyphrase, context);
-        } catch (error) {
-          console.log(`GPT API Error: ${error}`);
+        // Check if this check type is enabled for GPT recommendations
+        const useGPT = enabledGPTChecks.includes(title);
 
-          // Fallback recommendations for schema markup when API fails
+        if (useGPT) {
+          try {
+            recommendation = await getGPTRecommendation(title, keyphrase, context);
+          } catch (error) {
+            console.log(`GPT API Error: ${error}`);
+
+            // Use fallback recommendation if GPT fails
+            if (title === "Schema Markup") {
+              recommendation = generateSchemaMarkupRecommendation(scrapedData, url);
+            } else if (fallbackRecommendations[title]) {
+              recommendation = fallbackRecommendations[title]({ keyphrase, title, context });
+            } else {
+              recommendation = `Consider optimizing your content for the keyphrase "${keyphrase}" in relation to ${title.toLowerCase()}.`;
+            }
+          }
+        } else {
+          // Use fallback recommendation directly if GPT is disabled for this check
           if (title === "Schema Markup") {
             recommendation = generateSchemaMarkupRecommendation(scrapedData, url);
+          } else if (fallbackRecommendations[title]) {
+            recommendation = fallbackRecommendations[title]({ keyphrase, title, context });
           } else {
-            recommendation = "Unable to generate recommendation. Please try again later.";
+            recommendation = `Consider optimizing your content for the keyphrase "${keyphrase}" in relation to ${title.toLowerCase()}.`;
           }
         }
       }
@@ -691,7 +746,7 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
     schemaTypes.push("Organization Schema");
   }
 
-  // Default schema if no specific type detected
+  //  // Default schema if no specific type detected
   if (!isHome && schemaTypes.length === 0) {
     schemaTypes.push("WebPage Schema");
   }
@@ -706,3 +761,4 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
 
   return recommendation;
 }
+
