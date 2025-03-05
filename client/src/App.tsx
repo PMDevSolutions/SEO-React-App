@@ -1,15 +1,30 @@
+// src/App.tsx
+import React from 'react';
 import { Switch, Route } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import Home from "@/pages/Home";
+import { useWebflow } from './contexts/WebflowContext';
 
 function App() {
+  const { webflow } = useWebflow();
+
+  // Optional: Add Webflow-specific initialization logic
+  React.useEffect(() => {
+    if (webflow) {
+      // Perform any Webflow-specific setup
+      console.log('Webflow instance available:', webflow);
+    }
+  }, [webflow]);
+
   return (
-    <Switch>
-      {/* Add pages below */}
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="w-full p-4"> {/* Added padding for extension UI */}
+      <Switch>
+        {/* Add pages below */}
+        <Route path="/" component={Home} />
+        <Route component={NotFound} />
+      </Switch>
+    </div>
   );
 }
 

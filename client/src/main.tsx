@@ -1,16 +1,25 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { Toaster } from "@/components/ui/toaster";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import App from './App';
-import "./index.css";
+import { WebflowProvider } from './contexts/WebflowContext';
+import { registerExtension } from '@webflow/extensions';
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <Toaster />
-    </QueryClientProvider>
-  </StrictMode>,
-);
+// Webflow Extension Registration
+registerExtension({
+  id: 'my-react-extension',
+  name: 'My React Extension',
+  icon: 'path/to/icon.svg', // Replace with your extension icon
+  init(webflow) {
+    // Create root and render app
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      ReactDOM.createRoot(rootElement).render(
+        <React.StrictMode>
+          <WebflowProvider initialWebflow={webflow}>
+            <App />
+          </WebflowProvider>
+        </React.StrictMode>
+      );
+    }
+  }
+});
