@@ -8,11 +8,11 @@ interface SuccessMessages {
 
 // Checks that can use GPT recommendations (can be controlled via environment variable)
 // Empty array means no GPT recommendations for any checks
-const enabledGPTChecks = process.env.ENABLED_GPT_CHECKS ? 
-  process.env.ENABLED_GPT_CHECKS.split(',') : 
+const enabledGPTChecks = process.env.ENABLED_GPT_CHECKS ?
+  process.env.ENABLED_GPT_CHECKS.split(',') :
   [
     "Keyphrase in Title",
-    "Keyphrase in Meta Description", 
+    "Keyphrase in Meta Description",
     "Keyphrase in Introduction",
     "Keyphrase in H1 Heading",
     "Keyphrase in H2 Headings"
@@ -75,12 +75,13 @@ const checkPriorities: Record<string, 'high' | 'medium' | 'low'> = {
   "Keyphrase in H2 Headings": "medium",
   "Heading Hierarchy": "high",
   "Code Minification": "low",
-  "Schema Markup": "medium" // Added new check with medium priority
+  "Schema Markup": "medium",
+  "Image File Size": "medium" // Added new check with medium priority
 };
 
 // Custom recommendation templates for non-GPT fallbacks
 const fallbackRecommendations: Record<string, (params: any) => string> = {
-  "Keyphrase in Title": ({ keyphrase, title }) => 
+  "Keyphrase in Title": ({ keyphrase, title }) =>
     `Consider rewriting your title to include '${keyphrase}', preferably at the beginning.`,
 
   "Keyphrase in Meta Description": ({ keyphrase }) =>
@@ -102,8 +103,24 @@ const fallbackRecommendations: Record<string, (params: any) => string> = {
     `Add links to other relevant pages on your site to improve navigation and SEO.`,
 
   "Outbound Links": () =>
-    `Link to reputable external sources to increase your content's credibility.`
+    `Link to reputable external sources to increase your content's credibility.`,
+
+  "Image File Size": ({ largeImages }) => {
+    if (largeImages.length === 0) return '';
+
+    const imageListText = largeImages.map(img => `• ${img.src} (${formatBytes(img.size)})`).join('\n');
+    return `Compress these large images to improve page load times:\n${imageListText}\n\nConsider using tools like TinyPNG, Squoosh, or ImageOptim.`;
+  }
 };
+
+// Helper function to format bytes to KB or MB
+function formatBytes(bytes?: number): string {
+  if (!bytes) return 'Unknown size';
+
+  if (bytes < 1024) return bytes + ' bytes';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else return (bytes / 1048576).toFixed(1) + ' MB';
+}
 
 export async function analyzeSEOElements(url: string, keyphrase: string) {
   const scrapedData = await scrapeWebpage(url);
@@ -129,7 +146,8 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     "Keyphrase in H2 Headings": "Great job! Your H2 subheadings include the keyphrase, reinforcing your topic focus.",
     "Heading Hierarchy": "Great job! Your page has a proper heading tag hierarchy.",
     "Code Minification": "Excellent! Your JavaScript and CSS files are properly minified for better performance.",
-    "Schema Markup": "Great job! Your page has schema markup implemented, making it easier for search engines to understand your content."
+    "Schema Markup": "Great job! Your page has schema markup implemented, making it easier for search engines to understand your content.",
+    "Image File Size": "Great job! All your images are well-optimized, keeping your page loading times fast."
   };
 
   // Helper function to add check results
@@ -285,7 +303,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     introContext
   );
 
-  // Removed duplicate "Keyphrase in Subheadings" check since it's covered by "Keyphrase in H2 Headings"
 
   // 8. Image alt text analysis
   const altTextsWithKeyphrase = scrapedData.images.some(
@@ -500,7 +517,6 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
     `${h2Context}\nTarget keyphrase: "${keyphrase}"`
   );
 
-
   // Add heading hierarchy check
   // Check for proper heading hierarchy
   const hasH1 = h1Tags.length > 0;
@@ -682,11 +698,63 @@ Content type indicators:
     true // Skip GPT recommendation as we're using our custom one
   );
 
-  // Since we're skipping GPT recommendation by setting skipRecommendation=true,
-  // we need to manually assign our custom recommendation
+  // If the check failed, add our custom recommendation with specific image information
   const schemaCheck = checks.find(check => check.title === "Schema Markup");
   if (schemaCheck) {
     schemaCheck.recommendation = schemaRecommendation;
+  }
+
+  // Add NEW CHECK for Image File Size
+  // Define the threshold for large images (300KB = 300 * 1024 bytes)
+  const MAX_IMAGE_SIZE = 300 * 1024; // 300KB in bytes
+
+  let hasLargeImages = false;
+  const largeImages: Array<{ src: string; size?: number }> = [];
+
+  // Check if images are present and have size information
+  if (scrapedData.images.length === 0) {
+    // No images to check
+    hasLargeImages = false;
+  } else {
+    scrapedData.images.forEach(img => {
+      if (img.size && img.size > MAX_IMAGE_SIZE) {
+        hasLargeImages = true;
+        largeImages.push(img);
+      }
+    });
+  }
+
+  const totalImages = scrapedData.images.length;
+  const imagesWithSize = scrapedData.images.filter(img => img.size !== undefined).length;
+  const oversizedCount = largeImages.length;
+
+  // Create detailed context for the check
+  let imageSizesContext = `Found ${totalImages} images, ${imagesWithSize} with retrievable size information.\n`;
+  imageSizesContext += `${oversizedCount} images exceed the recommended size of 300KB.\n\n`;
+
+  if (largeImages.length > 0) {
+    imageSizesContext += "Large images:\n";
+    largeImages.forEach(img => {
+            imageSizesContext += `- ${img.src} (${formatBytes(img.size)})\n`;
+    });
+  }
+
+  await addCheck(
+    "Image File Size",
+    oversizedCount === 0
+      ? `All images are optimized with file sizes under 300KB.`
+      : `${oversizedCount} out of ${totalImages} images exceed the recommended size of 300KB. Large images slow down page loading.`,
+    !hasLargeImages,
+    imageSizesContext,
+    true // Skip GPT recommendation as we'll use our custom one
+  );
+
+  // If the check failed, add our custom recommendation with specific image information
+  if (hasLargeImages) {
+    const imageFileCheck = checks.find(check => check.title === "Image File Size");
+    if (imageFileCheck) {
+      imageFileCheck.recommendation = fallbackRecommendations["Image File Size"]({ largeImages });
+    }
   }
 
   return {
@@ -715,7 +783,7 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
 
   const hasFAQIndicators = scrapedData.content.toLowerCase().includes('faq') ||
     scrapedData.content.toLowerCase().includes('frequently asked') ||
-    (scrapedData.headings.filter(h => h.text.toLowerCase().includes('faq') || h.text.toLowerCase().includes('question')).length > 0);
+    (scrapedData.headings.filter((h: any) => h.text.toLowerCase().includes('faq') || h.text.toLowerCase().includes('question')).length > 0);
 
   const hasOrganizationIndicators = scrapedData.content.toLowerCase().includes('about us') ||
     scrapedData.content.toLowerCase().includes('contact us') ||
@@ -746,7 +814,7 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
     schemaTypes.push("Organization Schema");
   }
 
-  //  // Default schema if no specific type detected
+  // Default schema if no specific type detected
   if (!isHome && schemaTypes.length === 0) {
     schemaTypes.push("WebPage Schema");
   }
@@ -761,4 +829,3 @@ function generateSchemaMarkupRecommendation(scrapedData: any, url: string): stri
 
   return recommendation;
 }
-

@@ -7,7 +7,11 @@ interface ScrapedData {
   paragraphs: string[];
   subheadings: string[];
   headings: Array<{ level: number; text: string }>;
-  images: Array<{ src: string; alt: string }>;
+  images: Array<{ 
+    src: string; 
+    alt: string; 
+    size?: number;  // Image size in bytes
+  }>;
   internalLinks: string[];
   outboundLinks: string[];
   ogMetadata: {
@@ -27,6 +31,29 @@ interface ScrapedData {
     jsonLdBlocks: any[];
     microdataTypes: string[];
   };
+}
+
+// Helper function to get image size
+async function getImageSize(imageUrl: string, baseUrl: URL): Promise<number | undefined> {
+  try {
+    // Resolve relative URLs
+    const fullUrl = new URL(imageUrl, baseUrl.origin).toString();
+
+    // Make a HEAD request to get content-length without downloading the entire image
+    const response = await fetch(fullUrl, { method: 'HEAD' });
+
+    if (response.ok) {
+      const contentLength = response.headers.get('content-length');
+      if (contentLength) {
+        return parseInt(contentLength, 10);
+      }
+    }
+
+    return undefined;
+  } catch (error) {
+    console.log(`Error getting size for image ${imageUrl}:`, error);
+    return undefined;
+  }
 }
 
 export async function scrapeWebpage(url: string): Promise<ScrapedData> {
@@ -99,12 +126,25 @@ export async function scrapeWebpage(url: string): Promise<ScrapedData> {
       .filter((heading: { level: number; text: string }) => heading.text.length > 0);
 
     // Get images with alt text
-    const images = $("img")
+    const imageElements = $("img")
       .map((_: any, el: any) => ({
         src: $(el).attr("src") || "",
         alt: $(el).attr("alt") || "",
       }))
       .get();
+
+    // Get image sizes (in parallel)
+    const images = await Promise.all(
+      imageElements.map(async (img: { src: string; alt: string }) => {
+        if (!img.src) return img;
+
+        const size = await getImageSize(img.src, baseUrl);
+        return {
+          ...img,
+          size
+        };
+      })
+    );
 
     // Get internal and outbound links
     const internalLinks: string[] = [];

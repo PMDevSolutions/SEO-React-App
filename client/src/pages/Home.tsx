@@ -70,8 +70,9 @@ const shouldShowCopyButton = (checkTitle: string) => {
          !checkTitle.toLowerCase().includes("og image") &&
          !checkTitle.toLowerCase().includes("heading hierarchy") &&
          !checkTitle.toLowerCase().includes("code minification") &&
-         !checkTitle.toLowerCase().includes("schema markup");
-  // Removed the h1 heading and h2 headings exclusions to allow copy buttons
+         !checkTitle.toLowerCase().includes("schema markup") &&
+         !checkTitle.toLowerCase().includes("image file size");
+  // Added image file size to the exclusion list since it contains URLs and formatted file sizes
 };
 
 // Get priority icon based on priority level
@@ -125,6 +126,7 @@ const getLearnMoreUrl = (checkTitle: string): string => {
     "Heading Hierarchy": `${baseUrl}/heading-hierarchy-guide`,
     "Code Minification": `${baseUrl}/code-minification-guide`,
     "Schema Markup": `${baseUrl}/schema-markup-guide`,
+    "Image File Size": `${baseUrl}/image-optimization-guide`,
   };
 
   return checkUrls[checkTitle] || `${baseUrl}/seo-optimization-guide`;
@@ -136,7 +138,7 @@ const groupChecksByCategory = (checks: SEOCheck[]) => {
     "Page Settings": ["Keyphrase in Title", "Keyphrase in Meta Description", "Keyphrase in URL", "OG Title and Description"],
     "Content": ["Keyphrase in H1 Heading", "Keyphrase in H2 Headings", "Heading Hierarchy", "Content Length", "Keyphrase Density", "Keyphrase in Introduction"],
     "Links": ["Internal Links", "Outbound Links"],
-    "Images": ["Image Alt Attributes", "Next-Gen Image Formats", "OG Image"],
+    "Images": ["Image Alt Attributes", "Next-Gen Image Formats", "OG Image", "Image File Size"],
     "Technical": ["Code Minification", "Schema Markup"]
   };
 
