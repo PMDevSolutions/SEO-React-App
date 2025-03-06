@@ -93,6 +93,12 @@ Our platform performs comprehensive SEO checks, providing detailed analysis and 
     - Recommends appropriate schema markup based on page content
     - Provides guidance on implementing structured data
 
+18. **Image File Size Analysis**
+    - Detects oversized images (larger than 300KB)
+    - Identifies specific images that need compression
+    - Provides image size optimization recommendations
+    - Lists images by alt text with their corresponding file sizes
+
 ## SEO Priority System
 
 Our platform uses a priority system to help you focus on the most impactful SEO improvements:
@@ -113,6 +119,7 @@ Our platform uses a priority system to help you focus on the most impactful SEO 
   - Open Graph metadata
   - Code minification
   - Schema markup
+  - Image file size
 
 - **Low Priority** 🔵 - Minor issues that provide incremental SEO improvements
   - Image alt attributes
@@ -162,6 +169,7 @@ Our platform provides an overall SEO score (0-100) that helps you quickly assess
 - Responsive design
 - Dark mode optimization
 - Micro-interactions for feedback
+- "Learn more" links for documentation reference
 
 
 ## Development Stack
