@@ -108,7 +108,14 @@ const fallbackRecommendations: Record<string, (params: any) => string> = {
   "Image File Size": ({ largeImages }) => {
     if (largeImages.length === 0) return '';
 
-    const imageListText = largeImages.map(img => `• ${img.src} (${formatBytes(img.size)})`).join('\n');
+    const imageListText = largeImages.map(img => {
+      // Use alt text if available, otherwise use a default message
+      const imageLabel = img.alt ?
+        (img.alt.length > 40 ? img.alt.substring(0, 40) + '...' : img.alt) :
+        'Image with missing alt text';
+      return `• ${imageLabel} (${formatBytes(img.size)})`;
+    }).join('\n');
+
     return `Compress these large images to improve page load times:\n${imageListText}\n\nConsider using tools like TinyPNG, Squoosh, or ImageOptim.`;
   }
 };
@@ -497,7 +504,7 @@ export async function analyzeSEOElements(url: string, keyphrase: string) {
   } else {
     h2Context = `H2 headings ${h2HasKeyphrase ? '(contains keyphrase)' : '(missing keyphrase)'}:\n`;
     h2Tags.forEach((h, i) => {
-      h2Context += `${i+1}. "${h.text}"\n`;
+      h2Context += `${i + 1}. "${h.text}"\n`;
     });
     h2Context += `\nTarget keyphrase: "${keyphrase}"\n`;
 
@@ -709,7 +716,7 @@ Content type indicators:
   const MAX_IMAGE_SIZE = 300 * 1024; // 300KB in bytes
 
   let hasLargeImages = false;
-  const largeImages: Array<{ src: string; size?: number }> = [];
+  const largeImages: Array<{ src: string; alt: string; size?: number }> = [];
 
   // Check if images are present and have size information
   if (scrapedData.images.length === 0) {
@@ -719,7 +726,11 @@ Content type indicators:
     scrapedData.images.forEach(img => {
       if (img.size && img.size > MAX_IMAGE_SIZE) {
         hasLargeImages = true;
-        largeImages.push(img);
+        largeImages.push({
+          src: img.src,
+          alt: img.alt || '',
+          size: img.size
+        });
       }
     });
   }
@@ -735,7 +746,10 @@ Content type indicators:
   if (largeImages.length > 0) {
     imageSizesContext += "Large images:\n";
     largeImages.forEach(img => {
-            imageSizesContext += `- ${img.src} (${formatBytes(img.size)})\n`;
+      const imageLabel = img.alt ?
+        (img.alt.length > 40 ? img.alt.substring(0, 40) + '...' : img.alt) :
+        'Image with missing alt text';
+      imageSizesContext += `- ${imageLabel} (${formatBytes(img.size)})\n`;
     });
   }
 
