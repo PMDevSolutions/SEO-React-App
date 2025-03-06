@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   CircleAlert,
   Info,
-  ChevronLeft
+  ChevronLeft,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -99,6 +100,34 @@ const getPriorityText = (priority: string) => {
     default:
       return "";
   }
+};
+
+// Map check titles to documentation URLs
+const getLearnMoreUrl = (checkTitle: string): string => {
+  // These will be placeholder URLs until documentation is ready
+  const baseUrl = "#"; // Placeholder base URL
+
+  const checkUrls: Record<string, string> = {
+    "Keyphrase in Title": `${baseUrl}/seo-title-optimization`,
+    "Keyphrase in Meta Description": `${baseUrl}/meta-description-guide`,
+    "Keyphrase in URL": `${baseUrl}/url-optimization`,
+    "Content Length": `${baseUrl}/content-length-best-practices`,
+    "Keyphrase Density": `${baseUrl}/keyphrase-density-guide`,
+    "Keyphrase in Introduction": `${baseUrl}/introduction-optimization`,
+    "Image Alt Attributes": `${baseUrl}/image-alt-text-guide`,
+    "Internal Links": `${baseUrl}/internal-linking-strategy`,
+    "Outbound Links": `${baseUrl}/outbound-links-guide`,
+    "Next-Gen Image Formats": `${baseUrl}/next-gen-image-formats`,
+    "OG Image": `${baseUrl}/open-graph-image-optimization`,
+    "OG Title and Description": `${baseUrl}/open-graph-tags-guide`,
+    "Keyphrase in H1 Heading": `${baseUrl}/h1-heading-optimization`,
+    "Keyphrase in H2 Headings": `${baseUrl}/h2-heading-optimization`,
+    "Heading Hierarchy": `${baseUrl}/heading-hierarchy-guide`,
+    "Code Minification": `${baseUrl}/code-minification-guide`,
+    "Schema Markup": `${baseUrl}/schema-markup-guide`,
+  };
+
+  return checkUrls[checkTitle] || `${baseUrl}/seo-optimization-guide`;
 };
 
 // Group checks by category
@@ -468,9 +497,20 @@ export default function Home() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 </motion.div>
-                                <p className="text-sm text-muted-foreground">
-                                  {check.description}
-                                </p>
+                                <div className="text-sm text-muted-foreground">
+                                  <p className="inline">{check.description}</p>
+                                  {!check.passed && (
+                                    <a 
+                                      href={getLearnMoreUrl(check.title)} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="ml-1 inline-flex items-center text-primaryText hover:underline"
+                                    >
+                                      Learn more
+                                      <ExternalLink className="h-3 w-3 ml-1" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                               {!check.passed && check.recommendation && shouldShowCopyButton(check.title) && (
                                 <TooltipProvider>
