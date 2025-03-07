@@ -47,10 +47,28 @@ export default function SEOAnalyzer({ selectedElement }: SEOAnalyzerProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      // Get the URL of the current Webflow page
-      const pageUrl = selectedElement?.page?.url || window.location.href;
+      // Get the current page from Webflow
+      const page = await webflow.getCurrentPage();
+
+      if (!page) {
+        throw new Error("Could not detect the current page in Webflow Designer");
+      }
+
+      // Try production URL first
+      const productionUrl = page.productionUrl;
+      const stagingUrl = page.stagingUrl;
+
+      if (!productionUrl && !stagingUrl) {
+        throw new Error(
+          "This page hasn't been published yet. Please publish to either production or staging to analyze SEO."
+        );
+      }
+
+      // Use production URL if available, otherwise fall back to staging
+      const urlToAnalyze = productionUrl || stagingUrl;
+
       return analyzeSEO({
-        url: pageUrl,
+        url: urlToAnalyze,
         keyphrase: data.keyphrase,
       });
     },
