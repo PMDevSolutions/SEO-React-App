@@ -47,33 +47,9 @@ export default function SEOAnalyzer({ selectedElement }: SEOAnalyzerProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      // Get the current page from Webflow
-      const page = await webflow.getCurrentPage();
-
-      if (!page) {
-        throw new Error("Could not detect the current page in Webflow Designer");
-      }
-
-      // Check production URL first
-      if (page.productionUrl) {
-        return analyzeSEO({
-          url: page.productionUrl,
+      return analyzeSEO({
           keyphrase: data.keyphrase,
         });
-      }
-
-      // If no production URL, try staging URL
-      if (page.stagingUrl) {
-        return analyzeSEO({
-          url: page.stagingUrl,
-          keyphrase: data.keyphrase,
-        });
-      }
-
-      // If neither URL exists, throw an error
-      throw new Error(
-        "This page hasn't been published yet. Please publish to either production or staging to analyze SEO."
-      );
     },
     onSuccess: (data) => {
       setResults(data);
@@ -82,9 +58,9 @@ export default function SEOAnalyzer({ selectedElement }: SEOAnalyzerProps) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message
+        description: error.message,
       });
-    }
+    },
   });
 
   const copyToClipboard = (text: string | undefined) => {
@@ -92,7 +68,7 @@ export default function SEOAnalyzer({ selectedElement }: SEOAnalyzerProps) {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied!",
-      description: "Recommendation copied to clipboard"
+      description: "Recommendation copied to clipboard",
     });
   };
 

@@ -1,3 +1,8 @@
 {
-  "name": "example-webflow-app-react"
+  "name": "seo-analyzer-webflow-app",
+  "displayName": "SEO Analyzer",
+  "version": "1.0.0",
+  "description": "AI-powered SEO analysis tool for Webflow pages",
+  "author": "Replit",
+  "icon": "./icon.svg"
 }

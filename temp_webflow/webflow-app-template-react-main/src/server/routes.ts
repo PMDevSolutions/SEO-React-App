@@ -10,7 +10,7 @@ export function registerRoutes(app: Express) {
   const hasOpenAIKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
   console.log(`[SEO Analyzer] GPT Recommendations: ${useGPT ? "Enabled" : "Disabled"}`);
-  console.log(`[SEO Analyzer] OpenAI API Key: ${hasOpenAIKey ? "Provided" : "Not provided or invalid"}`);
+  console.log(`[SEO Analyzer] OpenAI Key: ${hasOpenAIKey ? "Provided" : "Not provided or invalid"}`);
 
   if (useGPT && !hasOpenAIKey) {
     console.warn("[SEO Analyzer] WARNING: GPT recommendations are enabled but no valid OpenAI API key was provided. Will use fallback recommendations.");
@@ -19,13 +19,13 @@ export function registerRoutes(app: Express) {
   // SEO Analysis endpoint
   app.post("/api/analyze", async (req, res) => {
     try {
-      const { url, keyphrase } = req.body;
+      const { keyphrase } = req.body;
 
-      if (!url || !keyphrase) {
-        return res.status(400).json({ message: "URL and keyphrase are required" });
+      if (!keyphrase) {
+        return res.status(400).json({ message: "Keyphrase is required" });
       }
 
-      const results = await analyzeSEOElements(url, keyphrase);
+      const results = await analyzeSEOElements(keyphrase);
       res.json(results);
     } catch (error: any) {
       res.status(500).json({ message: error.message });

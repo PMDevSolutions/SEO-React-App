@@ -13,6 +13,5 @@ export interface SEOAnalysisResult {
 }
 
 export interface AnalyzeRequest {
-  url: string;
   keyphrase: string;
 }
