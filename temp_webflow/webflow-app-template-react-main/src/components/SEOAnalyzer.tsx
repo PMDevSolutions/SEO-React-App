@@ -54,23 +54,26 @@ export default function SEOAnalyzer({ selectedElement }: SEOAnalyzerProps) {
         throw new Error("Could not detect the current page in Webflow Designer");
       }
 
-      // Try production URL first
-      const productionUrl = page.productionUrl;
-      const stagingUrl = page.stagingUrl;
-
-      if (!productionUrl && !stagingUrl) {
-        throw new Error(
-          "This page hasn't been published yet. Please publish to either production or staging to analyze SEO."
-        );
+      // Check production URL first
+      if (page.productionUrl) {
+        return analyzeSEO({
+          url: page.productionUrl,
+          keyphrase: data.keyphrase,
+        });
       }
 
-      // Use production URL if available, otherwise fall back to staging
-      const urlToAnalyze = productionUrl || stagingUrl;
+      // If no production URL, try staging URL
+      if (page.stagingUrl) {
+        return analyzeSEO({
+          url: page.stagingUrl,
+          keyphrase: data.keyphrase,
+        });
+      }
 
-      return analyzeSEO({
-        url: urlToAnalyze,
-        keyphrase: data.keyphrase,
-      });
+      // If neither URL exists, throw an error
+      throw new Error(
+        "This page hasn't been published yet. Please publish to either production or staging to analyze SEO."
+      );
     },
     onSuccess: (data) => {
       setResults(data);
