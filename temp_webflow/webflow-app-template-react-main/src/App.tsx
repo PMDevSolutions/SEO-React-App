@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/toaster";
 import SEOAnalyzer from "./components/SEOAnalyzer";
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
           <SEOAnalyzer selectedElement={selectedElement} />
         </DialogContent>
       </Dialog>
+      <Toaster />
     </div>
   );
 };
